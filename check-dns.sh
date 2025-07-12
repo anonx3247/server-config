@@ -74,7 +74,7 @@ check_mx_record() {
     
     result=$(nix-shell -p bind --command "host -t mx $domain" | awk '{print $7}')
     
-    if [ "$result" = "mx.$domain" ]; then
+    if [ "$result" = "mx.$domain." ]; then
         echo "✓ Found: $result"
         return 0
     else
@@ -92,7 +92,7 @@ check_txt_record() {
     
     result=$(nix-shell -p bind --command "host -t txt $this_domain" | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//')
     
-    if [ "$result" = "$expected_content" ]; then
+    if [ "$result" = "\"$expected_content\"" ]; then
         echo "✓ Found with expected content"
         return 0
     elif [ -z "$expected_content" ]; then
