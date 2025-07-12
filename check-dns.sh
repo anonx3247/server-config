@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # DNS Configuration Checker
 # Checks if your DNS records are properly configured for the server

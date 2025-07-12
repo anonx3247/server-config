@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # User Management Script
 # Manages users in the users.txt file only

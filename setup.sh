@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # NixOS Server Setup Script
 # Generates configuration.nix from users.txt and ssh_key file
