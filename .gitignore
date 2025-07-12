@@ -1,6 +1,15 @@
-# Ignore build outputs from performing a nix-build or `nix build` command
+# User list file (local configuration)
+users.txt
+
+# Generated configuration file
+configuration.nix
+
+# Nix build results
 result
 result-*
 
 # Ignore automatically generated direnv output
 .direnv
+
+# Ignore the generated ssh key
+ssh_key
