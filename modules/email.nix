@@ -59,7 +59,7 @@ in
       smtpd_milters = "unix:/run/opendkim/opendkim.sock";
       non_smtpd_milters = "unix:/run/opendkim/opendkim.sock";
       milter_default_action = "accept";
-      content_filter = "${pkgs.spamassassin}/bin/spamassassin";
+      content_filter = "spamassassin";
     };
 
     # Enable header checks
