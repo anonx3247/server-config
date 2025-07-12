@@ -147,12 +147,6 @@ in
     # socket = "unix:/run/opendkim/opendkim.sock";
   };
 
-  # Set proper permissions for OpenDKIM socket
-  systemd.services.opendkim.serviceConfig = {
-    Group = "opendkim";
-    UMask = "0002";
-  };
-
   # Create opendkim group
   users.groups.opendkim = {};
 
