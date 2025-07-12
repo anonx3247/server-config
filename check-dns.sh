@@ -86,11 +86,11 @@ check_mx_record() {
 
 # Function to check TXT record
 check_txt_record() {
-    local subdomain="$1"
+    local this_domain="$1"
     local expected_content="$2"
-    echo -n "Checking TXT record for $subdomain... "
+    echo -n "Checking TXT record for $this_domain... "
     
-    result=$(nix-shell -p bind --command "host -t txt $subdomain.$domain" | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//')
+    result=$(nix-shell -p bind --command "host -t txt $this_domain" | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//')
     
     if [ "$result" = "$expected_content" ]; then
         echo "✓ Found with expected content"
@@ -110,9 +110,9 @@ echo "=== Checking Required DNS Records ==="
 echo
 
 # Check A records
-check_a_record "$web_domain_prefix.$domain" || echo "  Please add: $web_domain_prefix.$domain A $public_ip"
-check_a_record "mail.$domain" || echo "  Please add: mail.$domain A $public_ip"
-check_a_record "git.$domain" || echo "  Please add: git.$domain A $public_ip"
+check_a_record $web_domain_prefix || echo "  Please add: $web_domain_prefix.$domain A $public_ip"
+check_a_record mail || echo "  Please add: mail.$domain A $public_ip"
+check_a_record git || echo "  Please add: git.$domain A $public_ip"
 
 echo
 
