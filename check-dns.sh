@@ -134,11 +134,11 @@ check_txt_record "_dmarc.$domain" "\"v=DMARC1; p=none\"" || echo "  Recommended:
 # DKIM record (may not be available until after server setup)
 
 get_dkim_record() {
-    cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//'
+    cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//' | sed 's/""//g'
 }
 
 echo -n "Checking DKIM record for mail._domainkey.$domain... "
-check_txt_record "mail._domainkey.$domain" "$(get_dkim_record)" || echo "  Recommended: mail._domainkey.$domain TXT \"$(get_dkim_record)\""
+check_txt_record "mail._domainkey.$domain" "$(get_dkim_record)" || echo "  Recommended: mail._domainkey.$domain TXT $(get_dkim_record)"
 
 echo
 echo "=== DNS Check Complete ==="
