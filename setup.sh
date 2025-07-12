@@ -40,7 +40,7 @@ echo "Found users file: $USERS_FILE"
 echo
 
 # Ask for domain name
-echo "Enter your domain name (e.g., lecaillon.com):"
+echo "Enter your domain name (e.g., example.com):"
 read -r domain
 
 echo "Enter the web domain prefix (e.g., web):"
@@ -138,6 +138,8 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo
+echo "Copying relevant files to the server..."
+cp -r modules *.nix users.txt ssh_key /etc/nixos/
 echo "Building the configuration..."
 nixos-rebuild switch
 
