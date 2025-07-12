@@ -52,10 +52,10 @@ in
         "127.0.0.0/8"
       ];
       smtp_tls_security_level = "may";
-      smtpd_milters = "local:/run/opendkim/opendkim.sock";
-      non_smtpd_milters = "local:/run/opendkim/opendkim.sock";
+      smtpd_milters = "unix:/run/opendkim/opendkim.sock";
+      non_smtpd_milters = "unix:/run/opendkim/opendkim.sock";
       milter_default_action = "accept";
-      #content_filter = "${pkgs.spamassassin}/bin/spamassassin";
+      content_filter = "${pkgs.spamassassin}/bin/spamassassin";
     };
 
     # Enable header checks

@@ -3,11 +3,6 @@
 
 { config, lib, pkgs, domain, webPrefix, ... }:
 
-let
-  # Extract hostname from domain (first part before dot)
-  hostname = builtins.head (lib.strings.splitString "." domain);
-in
-
 {
   # Add personal website nginx virtual host
   services.nginx.virtualHosts."${webPrefix}.${domain}" = {
@@ -59,7 +54,7 @@ in
     </html>
   '';
 
-  # Copy the default index.html if /var/www/${hostname}/index.html doesn't exist
+  # Copy the default index.html if /var/www/${webPrefix}/index.html doesn't exist
   systemd.services.web-setup = {
     description = "Setup default web content";
     wantedBy = [ "multi-user.target" ];
