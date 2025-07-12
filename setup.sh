@@ -172,7 +172,7 @@ done
 echo
 
 get_dkim_record() {
-    cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//'
+    cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//' | sed 's/""//g'
 }
 
 echo "DNS records you need to set up:"

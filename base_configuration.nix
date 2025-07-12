@@ -1,7 +1,7 @@
 # Base NixOS configuration that accepts users and domain parameters
 # This is used as a template to generate the final configuration.nix
 
-{ config, lib, pkgs, users, domain, ... }:
+{ config, lib, pkgs, users, domain, webPrefix, ... }:
 
 let
   # Read SSH key from file
@@ -21,7 +21,7 @@ in
     # Import service modules
     (import ./modules/email.nix { inherit config lib pkgs domain users; })
     (import ./modules/git.nix { inherit config lib pkgs domain; })
-    (import ./modules/web.nix { inherit config lib pkgs domain; })
+    (import ./modules/web.nix { inherit config lib pkgs domain webPrefix; })
   ];
 
   # Use the GRUB 2 boot loader
