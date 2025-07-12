@@ -61,6 +61,7 @@ check_a_record() {
         echo "✓ Found: $result"
         return 0
     else
+        echo "Result: $result"
         echo "✗ Not found"
         return 1
     fi
@@ -77,6 +78,7 @@ check_mx_record() {
         echo "✓ Found: $result"
         return 0
     else
+        echo "Result: $result"
         echo "✗ Not found"
         return 1
     fi
@@ -97,7 +99,8 @@ check_txt_record() {
         echo "✓ Found: $result"
         return 0
     else
-        echo "⚠ Found but content may not match expected: $result"
+        echo "Result: $result"
+        echo "⚠ Found but content may not match expected"
         return 1
     fi
 }
