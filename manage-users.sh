@@ -102,7 +102,6 @@ while true; do
             echo
             ;;
         3)
-            echo "Goodbye!"
             exit 0
             ;;
         *)
