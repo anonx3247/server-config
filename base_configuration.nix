@@ -59,7 +59,7 @@ in
   };
 
   # Nginx base configuration (only if web service is enabled)
-  services.nginx = lib.mkIf services.web {
+  services.nginx = lib.mkIf (services.web || services.mail || services.git) {
     enable = true;
     recommendedGzipSettings = true;
     recommendedOptimisation = true;
@@ -67,8 +67,9 @@ in
     recommendedTlsSettings = true;
   };
 
+
   # ACME configuration for Let's Encrypt certificates (only if web or mail service is enabled)
-  security.acme = lib.mkIf (services.web || services.mail) {
+  security.acme = lib.mkIf (services.web || services.mail || services.git) {
     acceptTerms = true;
     defaults.email = "security@${domain}";
   };
