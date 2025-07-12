@@ -13,3 +13,6 @@ result-*
 
 # Ignore the generated ssh key
 ssh_key
+
+# Ignore the generated configuration file
+server_config.conf
