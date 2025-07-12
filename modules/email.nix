@@ -19,10 +19,6 @@ let
       isSystemUser = true;
       group = "vmail";
     };
-    # Configure postfix user to access opendkim
-    postfix = {
-      extraGroups = [ "opendkim" ];
-    };
   };
 in
 
@@ -56,20 +52,21 @@ in
         "127.0.0.0/8"
       ];
       smtp_tls_security_level = "may";
-      smtpd_milters = "unix:/run/opendkim/opendkim.sock";
-      non_smtpd_milters = "unix:/run/opendkim/opendkim.sock";
+      smtpd_milters = "inet:localhost:8891";
+      non_smtpd_milters = "inet:localhost:8891";
       milter_default_action = "accept";
-      content_filter = "spamassassin";
+      # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
+      # content_filter = "spamassassin";
     };
 
-    # Enable header checks
-    enableHeaderChecks = true;
-    headerChecks = [
-      {
-        pattern = "/^X-Spam-Flag:/";
-        action = "REDIRECT spam@${domain}";
-      }
-    ];
+    # Enable header checks (disabled while SpamAssassin is disabled)
+    # enableHeaderChecks = true;
+    # headerChecks = [
+    #   {
+    #     pattern = "/^X-Spam-Flag:/";
+    #     action = "REDIRECT spam@${domain}";
+    #   }
+    # ];
 
     # SSL/TLS configuration
     sslCert = "/var/lib/acme/mail.${domain}/cert.pem";
@@ -122,38 +119,30 @@ in
     '';
   };
 
-  # SpamAssassin - Anti-spam
-  services.spamassassin = {
-    enable = true; # Enable SpamAssassin daemon
+  # SpamAssassin - Anti-spam (disabled for now - needs proper integration)
+  # services.spamassassin = {
+  #   enable = true; # Enable SpamAssassin daemon
 
-    # Configuration for SpamAssassin
-    config = ''
-      rewrite_header Subject [***** SPAM _SCORE_ *****]
-      required_score          5.0
-      use_bayes               1
-      bayes_auto_learn        1
-      add_header all Status _YESNO_, score=_SCORE_ required=_REQD_ tests=_TESTS_ autolearn=_AUTOLEARN_ version=_VERSION_
-    '';
+  #   # Configuration for SpamAssassin
+  #   config = ''
+  #     rewrite_header Subject [***** SPAM _SCORE_ *****]
+  #     required_score          5.0
+  #     use_bayes               1
+  #     bayes_auto_learn        1
+  #     add_header all Status _YESNO_, score=_SCORE_ required=_REQD_ tests=_TESTS_ autolearn=_AUTOLEARN_ version=_VERSION_
+  #   '';
 
-    # Optional: Enable debug mode if needed
-    debug = false;
-  };
+  #   # Optional: Enable debug mode if needed
+  #   debug = false;
+  # };
 
   # OpenDKIM - Email authentication
   services.opendkim = {
     enable = true;
     domains = "csl:mail.${domain}";
     selector = "default";
-    # socket = "unix:/run/opendkim/opendkim.sock";
+    socket = "inet:8891@localhost";  # Use inet socket instead of unix socket
   };
-
-  # Create opendkim group
-  users.groups.opendkim = {};
-
-  # Make sure the opendkim socket directory has proper permissions
-  systemd.tmpfiles.rules = [
-    "d /run/opendkim 0755 opendkim opendkim -"
-  ];
 
   # Open email-related firewall ports
   networking.firewall.allowedTCPPorts = [ 25 587 465 143 993 ];
