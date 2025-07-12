@@ -91,17 +91,13 @@ check_txt_record() {
     result=$(nix-shell -p bind --command "host -t txt $subdomain.$domain" | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//')
     
     if [ "$result" = "$expected_content" ]; then
-            echo "✓ Found with expected content"
-            return 0
-        elif [ -z "$expected_content" ]; then
-            echo "✓ Found: $result"
-            return 0
-        else
-            echo "⚠ Found but content may not match expected: $result"
-            return 1
-        fi
+        echo "✓ Found with expected content"
+        return 0
+    elif [ -z "$expected_content" ]; then
+        echo "✓ Found: $result"
+        return 0
     else
-        echo "✗ Not found"
+        echo "⚠ Found but content may not match expected: $result"
         return 1
     fi
 }
