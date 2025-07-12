@@ -86,7 +86,7 @@ while true; do
     echo "Options:"
     echo "  1) Add a new user"
     echo "  2) Remove a user"
-    echo "  3) Exit"
+    echo "  3) End User Management"
     echo
     
     read -p "Choose an option (1-3): " choice

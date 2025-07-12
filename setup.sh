@@ -9,6 +9,7 @@ USERS_FILE="users.txt"
 SSH_KEY_FILE="ssh_key"
 BASE_CONFIG="base_configuration.nix"
 OUTPUT_CONFIG="configuration.nix"
+CONFIG_FILE="server_config.conf"
 
 echo "=== NixOS Server Setup ==="
 echo
@@ -39,34 +40,101 @@ echo "Found SSH key file: $SSH_KEY_FILE"
 echo "Found users file: $USERS_FILE"
 echo
 
-# Ask for domain name
-echo "Enter your domain name (e.g., example.com):"
-read -r domain
+# Function to read configuration from file
+read_config() {
+    if [ -f "$CONFIG_FILE" ]; then
+        echo "Found existing configuration file: $CONFIG_FILE"
+        source "$CONFIG_FILE"
+        echo "Previous configuration:"
+        echo "  Domain: $domain"
+        echo "  Web prefix: $web_domain_prefix"
+        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web"
+        echo
+        read -p "Use existing configuration? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            return 1
+        fi
+        return 0
+    fi
+    return 1
+}
 
-echo "Enter the web domain prefix (e.g., web):"
-read -r web_domain_prefix
+# Function to save configuration to file
+save_config() {
+    cat > "$CONFIG_FILE" << EOF
+# Server configuration
+domain="$domain"
+web_domain_prefix="$web_domain_prefix"
+enable_mail="$enable_mail"
+enable_git="$enable_git"
+enable_web="$enable_web"
+EOF
+    echo "Configuration saved to $CONFIG_FILE"
+}
 
-# Validate domain (basic check)
-if [ -z "$domain" ]; then
-    echo "ERROR: Domain name cannot be empty!"
-    exit 1
+# Try to read existing configuration
+if ! read_config; then
+    # Ask for domain name
+    echo "Enter your domain name (e.g., example.com):"
+    read -r domain
+
+    echo "Enter the web domain prefix (e.g., web):"
+    read -r web_domain_prefix
+
+    # Validate domain (basic check)
+    if [ -z "$domain" ]; then
+        echo "ERROR: Domain name cannot be empty!"
+        exit 1
+    fi
+
+    if ! echo "$domain" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"; then
+        echo "ERROR: Invalid domain name format!"
+        exit 1
+    fi
+
+    if [ -z "$web_domain_prefix" ]; then
+        echo "ERROR: Web domain prefix cannot be empty!"
+        exit 1
+    fi
+
+    if ! echo "$web_domain_prefix" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9_-]*$"; then
+        echo "ERROR: Invalid web domain prefix format!"
+        exit 1
+    fi
+
+    # Ask which services to enable
+    echo
+    echo "Which services would you like to enable?"
+    echo
+
+    read -p "Enable mail server? (Y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
+        enable_mail="false"
+    else
+        enable_mail="true"
+    fi
+
+    read -p "Enable git server? (Y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
+        enable_git="false"
+    else
+        enable_git="true"
+    fi
+
+    read -p "Enable web server? (Y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
+        enable_web="false"
+    else
+        enable_web="true"
+    fi
+
+    # Save configuration
+    save_config
 fi
-
-if ! echo "$domain" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"; then
-    echo "ERROR: Invalid domain name format!"
-    exit 1
-fi
-
-if [ -z "$web_domain_prefix" ]; then
-    echo "ERROR: Web domain prefix cannot be empty!"
-    exit 1
-fi
-
-if ! echo "$web_domain_prefix" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9_-]*$"; then
-    echo "ERROR: Invalid web domain prefix format!"
-    exit 1
-fi
-
 
 # Extract hostname from domain (first part before dot)
 hostname=$(echo "$domain" | cut -d'.' -f1)
@@ -75,9 +143,16 @@ echo
 echo "Configuration:"
 echo "  Domain: $domain"
 echo "  Hostname: $hostname"
-echo "  Mail server: mail.$domain"
-echo "  Git server: git.$domain"
-echo "  Web server: $web_domain_prefix.$domain"
+echo "  Services enabled:"
+if [ "$enable_mail" = "true" ]; then
+    echo "    Mail server: mail.$domain"
+fi
+if [ "$enable_git" = "true" ]; then
+    echo "    Git server: git.$domain"
+fi
+if [ "$enable_web" = "true" ]; then
+    echo "    Web server: $web_domain_prefix.$domain"
+fi
 echo
 
 # Function to generate configuration.nix
@@ -106,6 +181,11 @@ $users_list
   # Domain configuration
   domainName = "$domain";
   webDomainPrefix = "$web_domain_prefix";
+  
+  # Service configuration
+  enableMail = $enable_mail;
+  enableGit = $enable_git;
+  enableWeb = $enable_web;
 in
 
 import ./$BASE_CONFIG {
@@ -113,6 +193,11 @@ import ./$BASE_CONFIG {
   users = definedUsers;
   domain = domainName;
   webPrefix = webDomainPrefix;
+  services = {
+    mail = enableMail;
+    git = enableGit;
+    web = enableWeb;
+  };
 }
 EOF
     
@@ -127,7 +212,9 @@ echo
 echo "Ready to proceed with server setup. This will:"
 echo "1. Generate the NixOS configuration"
 echo "2. Build and switch to the new configuration"
-echo "3. Set up passwords for all users"
+if [ "$enable_mail" = "true" ]; then
+    echo "3. Set up passwords for all users"
+fi
 echo
 
 read -p "Continue? (y/N): " -n 1 -r
@@ -139,53 +226,78 @@ fi
 
 echo
 echo "Copying relevant files to the server..."
-cp -r modules *.nix users.txt ssh_key /etc/nixos/
+cp -r modules *.nix $USERS_FILE $SSH_KEY_FILE "$CONFIG_FILE" /etc/nixos/
 echo "Building the configuration..."
 nixos-rebuild switch
 
 echo
-echo "Now let's set up passwords for the users..."
-echo
-
-for user in $(cat "$USERS_FILE"); do
-    echo "Setting password for $user"
-    passwd "$user"
-done
+if [ "$enable_mail" = "true" ]; then
+    echo "Now let's set up passwords for the users..."
+    echo
+    if [ -s "$USERS_FILE" ]; then
+        for user in $(cat "$USERS_FILE"); do
+            echo "Setting password for $user"
+            passwd "$user"
+        done
+    else
+        echo "No users to set passwords for."
+    fi
+fi
 
 echo
 echo "=== Server Setup Complete ==="
 echo "The server is now running with the following services:"
-echo "Mail: mail.$domain"
-echo "Git: git.$domain"
-echo "Web: https://$web_domain_prefix.$domain"
+if [ "$enable_mail" = "true" ]; then
+    echo "Mail: mail.$domain"
+fi
+if [ "$enable_git" = "true" ]; then
+    echo "Git: git.$domain"
+fi
+if [ "$enable_web" = "true" ]; then
+    echo "Web: https://$web_domain_prefix.$domain"
+fi
 echo
 
-echo "Mail server connection settings:"
-echo "IMAP: mail.$domain, STARTTLS, Port: 993"
-echo "SMTP: mail.$domain, STARTTLS, Port: 587"
-echo
+if [ "$enable_mail" = "true" ]; then
+    echo "Mail server connection settings:"
+    echo "IMAP: mail.$domain, STARTTLS, Port: 993"
+    echo "SMTP: mail.$domain, STARTTLS, Port: 587"
+    echo
 
-echo "User email addresses:"
-for user in $(cat "$USERS_FILE"); do
-    echo "  $user@$domain"
-done
-echo
+    echo "User email addresses:"
+    for user in $(cat "$USERS_FILE"); do
+        echo "  $user@$domain"
+    done
+    echo
+fi
 
 get_dkim_record() {
-    cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//' | sed 's/""//g'
+    if [ "$enable_mail" = "true" ] && [ -f /var/lib/opendkim/keys/default.txt ]; then
+        cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//' | sed 's/""//g'
+    else
+        echo "N/A (mail service not enabled)"
+    fi
 }
 
 echo "DNS records you need to set up:"
 echo "A & AAAA Records:"
-echo "  $web_domain_prefix.$domain -> [your server IP]"
-echo "  mail.$domain -> [your server IP]"
-echo "  git.$domain -> [your server IP]"
-echo "MX Record:"
-echo "  $domain -> mx.$domain"
-echo "TXT Records:"
-echo "  @.$domain -> 'v=spf1 a:mail.lecaillon.com -all'"
-echo "  _dmarc.$domain -> 'v=DMARC1; p=none'"
-echo "  mail._domainkey.$domain -> '$(get_dkim_record)'"
+if [ "$enable_web" = "true" ]; then
+    echo "  $web_domain_prefix.$domain -> [your server IP]"
+fi
+if [ "$enable_mail" = "true" ]; then
+    echo "  mail.$domain -> [your server IP]"
+fi
+if [ "$enable_git" = "true" ]; then
+    echo "  git.$domain -> [your server IP]"
+fi
+if [ "$enable_mail" = "true" ]; then
+    echo "MX Record:"
+    echo "  $domain -> mx.$domain"
+    echo "TXT Records:"
+    echo "  @.$domain -> 'v=spf1 a:mail.$domain -all'"
+    echo "  _dmarc.$domain -> 'v=DMARC1; p=none'"
+    echo "  mail._domainkey.$domain -> '$(get_dkim_record)'"
+fi
 echo
 echo "Would you like me to check the DNS records? (y/N): (You can always do it later with ./check-dns.sh)"
 read -p "Check DNS? (y/N): " -n 1 -r
@@ -193,12 +305,14 @@ echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Skipping DNS check."
 else
-    ./check-dns.sh
+    ./check-dns.sh "$domain" "$web_domain_prefix" "$enable_mail" "$enable_git" "$enable_web"
 fi
 
 echo "Don't forget to:"
 echo "1. Set up the DNS records listed above"
 echo "2. Wait for DNS propagation (can take up to 24 hours)"
-echo "3. Configure your email client with the settings above"
+if [ "$enable_mail" = "true" ]; then
+    echo "3. Configure your email client with the settings above"
+fi
 echo "4. Test the services after DNS propagation"
 

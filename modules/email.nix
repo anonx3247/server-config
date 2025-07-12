@@ -19,6 +19,10 @@ let
       isSystemUser = true;
       group = "vmail";
     };
+    # Configure postfix user to access opendkim
+    postfix = {
+      extraGroups = [ "opendkim" ];
+    };
   };
 in
 
@@ -140,7 +144,22 @@ in
     enable = true;
     domains = "csl:mail.${domain}";
     selector = "default";
+    # socket = "unix:/run/opendkim/opendkim.sock";
   };
+
+  # Set proper permissions for OpenDKIM socket
+  systemd.services.opendkim.serviceConfig = {
+    Group = "opendkim";
+    UMask = "0002";
+  };
+
+  # Create opendkim group
+  users.groups.opendkim = {};
+
+  # Make sure the opendkim socket directory has proper permissions
+  systemd.tmpfiles.rules = [
+    "d /run/opendkim 0755 opendkim opendkim -"
+  ];
 
   # Open email-related firewall ports
   networking.firewall.allowedTCPPorts = [ 25 587 465 143 993 ];
