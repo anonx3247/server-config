@@ -14,32 +14,6 @@ CONFIG_FILE="server_config.conf"
 echo "=== NixOS Server Setup ==="
 echo
 
-# Check if ssh_key file exists
-if [ ! -f "$SSH_KEY_FILE" ]; then
-    echo "ERROR: SSH key file '$SSH_KEY_FILE' not found!"
-    echo "Please create the file '$SSH_KEY_FILE' with your public SSH key."
-    echo
-    echo "Example:"
-    echo "  echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...' > ssh_key"
-    echo
-    echo "You can get your public key with:"
-    echo "  cat ~/.ssh/id_rsa.pub"
-    echo
-    exit 1
-fi
-
-echo "Lets manage the email users"
-./manage-users.sh
-
-# Check if users file is empty
-if [ ! -s "$USERS_FILE" ]; then
-    echo "WARNING: Users file '$USERS_FILE' is empty!"
-fi
-
-echo "Found SSH key file: $SSH_KEY_FILE"
-echo "Found users file: $USERS_FILE"
-echo
-
 # Function to read configuration from file
 read_config() {
     if [ -f "$CONFIG_FILE" ]; then
@@ -75,35 +49,8 @@ EOF
 
 # Try to read existing configuration
 if ! read_config; then
-    # Ask for domain name
-    echo "Enter your domain name (e.g., example.com):"
-    read -r domain
 
-    echo "Enter the web domain prefix (e.g., web):"
-    read -r web_domain_prefix
-
-    # Validate domain (basic check)
-    if [ -z "$domain" ]; then
-        echo "ERROR: Domain name cannot be empty!"
-        exit 1
-    fi
-
-    if ! echo "$domain" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"; then
-        echo "ERROR: Invalid domain name format!"
-        exit 1
-    fi
-
-    if [ -z "$web_domain_prefix" ]; then
-        echo "ERROR: Web domain prefix cannot be empty!"
-        exit 1
-    fi
-
-    if ! echo "$web_domain_prefix" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9_-]*$"; then
-        echo "ERROR: Invalid web domain prefix format!"
-        exit 1
-    fi
-
-    # Ask which services to enable
+# Ask which services to enable
     echo
     echo "Which services would you like to enable?"
     echo
@@ -130,6 +77,35 @@ if ! read_config; then
         enable_web="false"
     else
         enable_web="true"
+    fi
+    # Ask for domain name
+    echo "Enter your domain name (e.g., example.com):"
+    read -r domain
+
+    # Validate domain (basic check)
+    if [ -z "$domain" ]; then
+        echo "ERROR: Domain name cannot be empty!"
+        exit 1
+    fi
+
+    if ! echo "$domain" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"; then
+        echo "ERROR: Invalid domain name format!"
+        exit 1
+    fi
+
+    if [ "$enable_web" = "true" ]; then
+        echo "Enter the web domain prefix (e.g., web):"
+        read -r web_domain_prefix
+
+        if [ -z "$web_domain_prefix" ]; then
+            echo "ERROR: Web domain prefix cannot be empty!"
+            exit 1
+        fi
+
+        if ! echo "$web_domain_prefix" | grep -q "^[a-zA-Z0-9][a-zA-Z0-9_-]*$"; then
+            echo "ERROR: Invalid web domain prefix format!"
+            exit 1
+        fi
     fi
 
     # Save configuration
@@ -207,6 +183,35 @@ EOF
 # Generate configuration
 generate_config
 echo
+
+
+# Check if ssh_key file exists
+if [ ! -f "$SSH_KEY_FILE" ]; then
+    echo "ERROR: SSH key file '$SSH_KEY_FILE' not found!"
+    echo "Please create the file '$SSH_KEY_FILE' with your public SSH key."
+    echo
+    echo "Example:"
+    echo "  echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...' > ssh_key"
+    echo
+    echo "You can get your public key with:"
+    echo "  cat ~/.ssh/id_rsa.pub"
+    echo
+    exit 1
+fi
+
+echo "Lets manage the email users"
+./manage-users.sh
+
+# Check if users file is empty
+if [ ! -s "$USERS_FILE" ]; then
+    echo "WARNING: Users file '$USERS_FILE' is empty!"
+fi
+
+echo "Found SSH key file: $SSH_KEY_FILE"
+echo "Found users file: $USERS_FILE"
+echo
+
+
 
 # Ask for confirmation before proceeding
 echo "Ready to proceed with server setup. This will:"
