@@ -92,7 +92,7 @@ check_txt_record() {
     
     result=$(nix-shell -p bind --command "host -t txt $this_domain" | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//')
     
-    if [ "$result" = "\"$expected_content\"" ]; then
+    if [ "$result" = "$expected_content" ]; then
         echo "✓ Found with expected content"
         return 0
     elif [ -z "$expected_content" ]; then
@@ -126,10 +126,10 @@ echo "=== Checking Optional TXT Records ==="
 echo
 
 # SPF record
-check_txt_record "$domain" "v=spf1" || echo "  Recommended: $domain TXT \"v=spf1 a:mail.$domain -all\""
+check_txt_record "$domain" "\"v=spf1 a:mail.$domain -all\"" || echo "  Recommended: $domain TXT \"v=spf1 a:mail.$domain -all\""
 
 # DMARC record
-check_txt_record "_dmarc.$domain" "v=DMARC1" || echo "  Recommended: _dmarc.$domain TXT \"v=DMARC1; p=none\""
+check_txt_record "_dmarc.$domain" "\"v=DMARC1; p=none\"" || echo "  Recommended: _dmarc.$domain TXT \"v=DMARC1; p=none\""
 
 # DKIM record (may not be available until after server setup)
 
@@ -150,9 +150,3 @@ echo "1. If any records are missing, add them to your DNS provider"
 echo "2. Wait for DNS propagation (can take up to 24 hours)"
 echo "3. Re-run this script to verify changes"
 echo "4. Test your services after DNS propagation"
-echo
-echo "Common DNS providers:"
-echo "- Cloudflare: https://dash.cloudflare.com/"
-echo "- Namecheap: https://www.namecheap.com/domains/freedns/"
-echo "- GoDaddy: https://www.godaddy.com/help/manage-dns-zone-files-680"
-echo "- Google Domains: https://domains.google.com/" 
