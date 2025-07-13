@@ -161,7 +161,7 @@ generate_config() {
     # Read users from file and format as Nix list
     users_list=$(while IFS= read -r user; do
         echo "    \"$user\""
-    done < "$USERS_FILE" | paste -sd ',' - | sed 's/,/, /g')
+    done < "$USERS_FILE" | paste -sd ' ' - | sed 's/,/, /g')
     
     # Generate the configuration file
     cat > "$OUTPUT_CONFIG" << EOF
