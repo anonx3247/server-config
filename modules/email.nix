@@ -52,8 +52,8 @@ in
         "127.0.0.0/8"
       ];
       smtp_tls_security_level = "may";
-      smtpd_milters = "inet:localhost:8891";
-      non_smtpd_milters = "inet:localhost:8891";
+      smtpd_milters = "inet:127.0.0.1:8891";
+      non_smtpd_milters = "inet:127.0.0.1:8891";
       milter_default_action = "accept";
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
       # content_filter = "spamassassin";
