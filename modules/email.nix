@@ -80,6 +80,7 @@ in
       smtpd_sasl_path = "/var/lib/postfix/queue/private/auth";
       smtpd_sasl_auth_enable = "yes";
       smtpd_tls_auth_only = "yes";
+      defer_transports = "smtp"; # Defer to SMTP when MX is not found
     };
   };
 
