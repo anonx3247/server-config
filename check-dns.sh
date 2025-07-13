@@ -206,8 +206,8 @@ if [ "$enable_mail" = "true" ]; then
 
     # DKIM record (may not be available until after server setup)
     get_dkim_record() {
-        if [ -f /var/lib/opendkim/keys/default.txt ]; then
-            cat /var/lib/opendkim/keys/default.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//' | sed 's/""//g'
+        if [ -f /var/lib/opendkim/keys/mail.txt ]; then
+            cat /var/lib/opendkim/keys/mail.txt | grep -o '"[^"]*"' | tr -d '\n' | sed 's/" "//' | sed 's/""//g'
         else
             echo "N/A (DKIM keys not found)"
         fi
