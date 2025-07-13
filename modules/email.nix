@@ -140,12 +140,12 @@ in
   # OpenDKIM - Email authentication
   services.opendkim = {
     enable = true;
-    domains = "csl:${domain},csl:mail.${domain}";
+    domains = "csl:mail.${domain}";
     selector = "mail";
     socket = "inet:8891@localhost";  # Use inet socket instead of unix socket
     settings = {
       MilterDebug = "6";
-      SubDomains = "yes";
+      # SubDomains = "yes";
       MultipleSignatures = "yes";
     };
   };
