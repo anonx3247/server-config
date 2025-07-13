@@ -154,7 +154,7 @@ check_mx_record() {
     
     result=$(nix-shell -p bind --command "host -t mx $domain" | awk '{print $7}')
     
-    if [ "$result" = "mx.$domain." ]; then
+    if [ "$result" = "mail.$domain." ]; then
         echo "✓ Found: $result"
         return 0
     else

@@ -330,7 +330,7 @@ if [ "$enable_git" = "true" ]; then
 fi
 if [ "$enable_mail" = "true" ]; then
     echo "MX Record:"
-    echo "  $domain -> mx.$domain"
+    echo "  $domain -> mail.$domain"
     echo "TXT Records:"
     echo "  @.$domain -> 'v=spf1 a:mail.$domain -all'"
     echo "  _dmarc.$domain -> 'v=DMARC1; p=none'"
