@@ -38,6 +38,15 @@ in
     forceSSL = true;
   };
 
+  services.nginx.virtualHosts."mx.${domain}" = {
+    enableACME = true;
+    forceSSL = true;
+
+    locations."/" = {
+      return = "301 https://mail.lecaillon.com$request_uri";
+    };
+  };
+
   # Postfix - SMTP server
   services.postfix = {
     enable = true;
