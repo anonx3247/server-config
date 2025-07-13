@@ -139,12 +139,13 @@ in
   # OpenDKIM - Email authentication
   services.opendkim = {
     enable = true;
-    domains = "csl:mail.${domain}";
-    selector = "default";
+    domains = "csl:${domain}";
+    selector = "mail";
     socket = "inet:8891@localhost";  # Use inet socket instead of unix socket
     settings = {
       MilterDebug = "6";
-    };
+      SubDomains = "yes";
+    }
   };
 
   # Open email-related firewall ports

@@ -54,22 +54,22 @@ This script allows you to check if your DNS settings are correct
 
 After successful deployment, the following services will be available:
 
-- **Mail Server**: `mail.lecaillon.com`
+- **Mail Server**: `mail.$domain`
   - IMAP: Port 993 (STARTTLS)
   - SMTP: Port 587 (STARTTLS)
-  - User emails: `username@lecaillon.com`
+  - User emails: `username@$domain`
 
-- **Git Server**: `git.lecaillon.com`
+- **Git Server**: `git.$domain`
   - Web interface for Git repositories
 
-- **Web Server**: `anas.lecaillon.com`
+- **Web Server**: `$web_prefix.$domain`
   - Static web content
 
 ## Configuration
 
 All users created through this system will:
 - Have `isNormalUser = true`
-- Be able to receive email at `username@lecaillon.com`
+- Be able to receive email at `username@$domain`
 - Need to have passwords set during deployment
 
 The system also creates:
@@ -79,10 +79,10 @@ The system also creates:
 ## DNS Requirements
 
 Make sure to set up DNS records for:
-- `mail.lecaillon.com` (A record)
-- `git.lecaillon.com` (A record)
-- `anas.lecaillon.com` (A record)
-- `lecaillon.com` (MX record pointing to mail.lecaillon.com)
+- `mail.$domain` (A record)
+- `git.$domain` (A record)
+- `$web_prefix.$domain` (A record)
+- `$domain` (MX record pointing to mail.$domain)
 
 ## Security
 
