@@ -54,7 +54,7 @@ in
       smtp_tls_security_level = "may";
       smtpd_milters = "inet:127.0.0.1:8891";
       non_smtpd_milters = "inet:127.0.0.1:8891";
-      milter_default_action = "accept";
+      milter_default_action = "tempfail";
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
       # content_filter = "spamassassin";
     };
