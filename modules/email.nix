@@ -44,9 +44,11 @@ in
     enableSmtp = true;
     enableSubmission = true;
     domain = domain;
+    origin = domain;
     hostname = "mail.${domain}";
     postmasterAlias = "admin@${domain}";
     rootAlias = "admin@${domain}";
+    destination = "mail.${domain}, localhost.${domain}, ${domain}";
 
     # Basic SMTP configuration
     config = {
@@ -84,8 +86,6 @@ in
       smtpd_sasl_auth_enable = "yes";
       smtpd_tls_auth_only = "yes";
       defer_transports = "smtp"; # Defer to SMTP when MX is not found
-      mydestination = "${hostname}, localhost.${domain}, ${domain}";
-      myorigin = "${domain}";
     };
   };
 
