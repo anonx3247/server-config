@@ -144,6 +144,7 @@ in
     socket = "inet:8891@localhost";  # Use inet socket instead of unix socket
     settings = {
       MilterDebug = "6";
+    };
   };
 
   # Open email-related firewall ports
