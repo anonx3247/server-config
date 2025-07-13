@@ -113,10 +113,8 @@ in
       first_valid_gid = 100
       auth_mechanisms = plain login
 
-      mydomain = ${domain}
-      myhostname = ${hostname}
-      mydestination = $myhostname, localhost.$mydomain, $mydomain
-      myorigin = $mydomain
+      mydestination = ${hostname}, localhost.${domain}, ${domain}
+      myorigin = ${domain}
 
       service auth {
         unix_listener /var/lib/postfix/queue/private/auth {
