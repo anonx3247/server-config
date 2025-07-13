@@ -196,6 +196,7 @@ fi
 
 if [ "$enable_mail" = "true" ]; then
     check_a_record mail || echo "  Please add: mail.$domain A $public_ip"
+    check_a_record mx || echo "  Please add: mx.$domain A $public_ip"
 fi
 
 if [ "$enable_git" = "true" ]; then

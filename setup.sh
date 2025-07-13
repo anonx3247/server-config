@@ -324,6 +324,7 @@ if [ "$enable_web" = "true" ]; then
 fi
 if [ "$enable_mail" = "true" ]; then
     echo "  mail.$domain -> [your server IP]"
+    echo "  mx.$domain -> [your server IP]"
 fi
 if [ "$enable_git" = "true" ]; then
     echo "  git.$domain -> [your server IP]"
