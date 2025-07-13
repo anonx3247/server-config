@@ -146,6 +146,7 @@ in
     settings = {
       MilterDebug = "6";
       SubDomains = "yes";
+      MultipleSignatures = "yes";
     };
   };
 
