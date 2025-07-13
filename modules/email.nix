@@ -114,7 +114,6 @@ in
       auth_mechanisms = plain login
 
       mydestination = ${hostname}, localhost.${domain}, ${domain}
-      myhostname = ${hostname}
       myorigin = ${domain}
 
       service auth {
