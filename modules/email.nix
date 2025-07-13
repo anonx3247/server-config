@@ -84,6 +84,8 @@ in
       smtpd_sasl_auth_enable = "yes";
       smtpd_tls_auth_only = "yes";
       defer_transports = "smtp"; # Defer to SMTP when MX is not found
+      mydestination = "${hostname}, localhost.${domain}, ${domain}";
+      myorigin = "${domain}";
     };
   };
 
@@ -112,9 +114,6 @@ in
       first_valid_uid = 1000
       first_valid_gid = 100
       auth_mechanisms = plain login
-
-      mydestination = ${hostname}, localhost.${domain}, ${domain}
-      myorigin = ${domain}
 
       service auth {
         unix_listener /var/lib/postfix/queue/private/auth {
