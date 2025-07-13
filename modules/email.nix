@@ -48,7 +48,11 @@ in
     hostname = "mail.${domain}";
     postmasterAlias = "admin@${domain}";
     rootAlias = "admin@${domain}";
-    destination = "mail.${domain}, localhost.${domain}, ${domain}";
+    destination = [
+      "mail.${domain}"
+      "localhost.${domain}"
+      "${domain}"
+    ];
 
     # Basic SMTP configuration
     config = {
