@@ -52,10 +52,10 @@ in
         "127.0.0.0/8"
       ];
       smtp_tls_security_level = "may";
-      #smtpd_milters = "inet:127.0.0.1:8891";
-      #non_smtpd_milters = "inet:127.0.0.1:8891";
-      smtpd_milters = "unix:/run/opendkim/opendkim.sock";
-      non_smtpd_milters = "unix:/run/opendkim/opendkim.sock";
+      smtpd_milters = "inet:127.0.0.1:8891";
+      non_smtpd_milters = "inet:127.0.0.1:8891";
+      #smtpd_milters = "unix:/run/opendkim/opendkim.sock";
+      #non_smtpd_milters = "unix:/run/opendkim/opendkim.sock";
       milter_default_action = "tempfail";
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
       # content_filter = "spamassassin";
@@ -143,7 +143,7 @@ in
     enable = true;
     domains = "csl:${domain}";
     selector = "mail";
-    # socket = "inet:8891@localhost";  # Use inet socket instead of unix socket
+    socket = "inet:8891@localhost";  # Use inet socket instead of unix socket
     settings = {
       MilterDebug = "6";
       SubDomains = "yes";
