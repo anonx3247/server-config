@@ -2,6 +2,9 @@
 
 # NixOS Server Setup Script
 # Generates configuration.nix from users.txt and ssh_key file
+# 
+# Usage: ./setup.sh [-y]
+#   -y  Assume yes to all prompts (non-interactive mode)
 
 set -e
 
@@ -10,6 +13,13 @@ SSH_KEY_FILE="ssh_key"
 BASE_CONFIG="base_configuration.nix"
 OUTPUT_CONFIG="configuration.nix"
 CONFIG_FILE="server_config.conf"
+
+# Check for -y flag
+ASSUME_YES=false
+if [ "$1" = "-y" ]; then
+    ASSUME_YES=true
+    shift
+fi
 
 echo "=== NixOS Server Setup ==="
 echo
@@ -24,12 +34,17 @@ read_config() {
         echo "  Web prefix: $web_domain_prefix"
         echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web"
         echo
-        read -p "Use existing configuration? (Y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Nn]$ ]]; then
-            return 1
+        if [ "$ASSUME_YES" = true ]; then
+            echo "Using -y flag: using existing configuration"
+            return 0
+        else
+            read -p "Use existing configuration? (Y/n): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Nn]$ ]]; then
+                return 1
+            fi
+            return 0
         fi
-        return 0
     fi
     return 1
 }
@@ -55,29 +70,37 @@ if ! read_config; then
     echo "Which services would you like to enable?"
     echo
 
-    read -p "Enable mail server? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        enable_mail="false"
-    else
+    if [ "$ASSUME_YES" = true ]; then
+        echo "Using -y flag: enabling all services by default"
         enable_mail="true"
-    fi
-
-    read -p "Enable git server? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        enable_git="false"
-    else
         enable_git="true"
-    fi
-
-    read -p "Enable web server? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        enable_web="false"
-    else
         enable_web="true"
+    else
+        read -p "Enable mail server? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_mail="false"
+        else
+            enable_mail="true"
+        fi
+
+        read -p "Enable git server? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_git="false"
+        else
+            enable_git="true"
+        fi
+
+        read -p "Enable web server? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_web="false"
+        else
+            enable_web="true"
+        fi
     fi
+    
     # Ask for domain name
     echo "Enter your domain name (e.g., example.com):"
     read -r domain
@@ -200,7 +223,13 @@ if [ ! -f "$SSH_KEY_FILE" ]; then
 fi
 
 echo "Lets manage the email users"
-./manage-users.sh
+if [ "$ASSUME_YES" = false ]; then
+    ./manage-users.sh
+fi
+
+# otherwise assume users are already set up
+
+
 
 # Check if users file is empty
 if [ ! -s "$USERS_FILE" ]; then
@@ -222,11 +251,15 @@ if [ "$enable_mail" = "true" ]; then
 fi
 echo
 
-read -p "Continue? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Setup cancelled."
-    exit 0
+if [ "$ASSUME_YES" = true ]; then
+    echo "Using -y flag: proceeding automatically"
+else
+    read -p "Continue? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Setup cancelled."
+        exit 0
+    fi
 fi
 
 echo
@@ -305,12 +338,20 @@ if [ "$enable_mail" = "true" ]; then
 fi
 echo
 echo "Would you like me to check the DNS records? (y/N): (You can always do it later with ./check-dns.sh)"
-read -p "Check DNS? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Skipping DNS check."
+if [ "$ASSUME_YES" = true ]; then
+    echo "Using -y flag: skipping DNS check"
 else
-    ./check-dns.sh "$domain" "$web_domain_prefix" "$enable_mail" "$enable_git" "$enable_web"
+    read -p "Check DNS? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Skipping DNS check."
+    else
+        if [ "$ASSUME_YES" = true ]; then
+            ./check-dns.sh -y "$domain" "$web_domain_prefix" "$enable_mail" "$enable_git" "$enable_web"
+        else
+            ./check-dns.sh "$domain" "$web_domain_prefix" "$enable_mail" "$enable_git" "$enable_web"
+        fi
+    fi
 fi
 
 echo "Don't forget to:"

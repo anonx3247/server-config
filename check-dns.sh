@@ -2,10 +2,20 @@
 
 # DNS Configuration Checker
 # Checks if your DNS records are properly configured for the server
+#
+# Usage: ./check-dns.sh [-y] [domain web_prefix enable_mail enable_git enable_web]
+#   -y  Assume yes to all prompts (check all services by default)
 
 set -e
 
 CONFIG_FILE="server_config.conf"
+
+# Check for -y flag
+ASSUME_YES=false
+if [ "$1" = "-y" ]; then
+    ASSUME_YES=true
+    shift
+fi
 
 echo "=== DNS Configuration Checker ==="
 echo
@@ -71,28 +81,35 @@ else
     echo "Which services would you like to check DNS for?"
     echo
 
-    read -p "Check mail server DNS? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        enable_mail="false"
-    else
+    if [ "$ASSUME_YES" = true ]; then
+        echo "Using -y flag: checking all services by default"
         enable_mail="true"
-    fi
-
-    read -p "Check git server DNS? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        enable_git="false"
-    else
         enable_git="true"
-    fi
-
-    read -p "Check web server DNS? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        enable_web="false"
-    else
         enable_web="true"
+    else
+        read -p "Check mail server DNS? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_mail="false"
+        else
+            enable_mail="true"
+        fi
+
+        read -p "Check git server DNS? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_git="false"
+        else
+            enable_git="true"
+        fi
+
+        read -p "Check web server DNS? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_web="false"
+        else
+            enable_web="true"
+        fi
     fi
 fi
 

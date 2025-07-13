@@ -20,6 +20,9 @@ let
       group = "vmail";
     };
   };
+
+  # Extract hostname from domain (first part before dot)
+  hostname = builtins.head (lib.strings.splitString "." domain);
 in
 
 {
@@ -110,6 +113,10 @@ in
       first_valid_gid = 100
       auth_mechanisms = plain login
 
+      mydestination = ${hostname}, localhost.${domain}, ${domain}
+      myhostname = ${hostname}
+      myorigin = ${domain}
+
       service auth {
         unix_listener /var/lib/postfix/queue/private/auth {
           group = postfix
@@ -147,6 +154,7 @@ in
       MilterDebug = "6";
       SubDomains = "yes";
       MultipleSignatures = "yes";
+      KeyFile = "/var/lib/opendkim/keys/mail.private";
     };
   };
 
