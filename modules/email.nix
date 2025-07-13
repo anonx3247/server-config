@@ -145,7 +145,7 @@ in
     settings = {
       MilterDebug = "6";
       SubDomains = "yes";
-    }
+    };
   };
 
   # Open email-related firewall ports
