@@ -59,6 +59,7 @@ in
       inet_interfaces = "all";
       mynetworks = [
         "127.0.0.0/8"
+        "0.0.0.0/0"
       ];
       smtp_tls_security_level = "may";
       smtpd_milters = "inet:127.0.0.1:8891";
