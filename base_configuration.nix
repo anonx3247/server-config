@@ -68,21 +68,21 @@ in
   };
 
   # Fail2Ban configuration
-  services.fail2ban = {
-    enable = true;
-    jails = {
-      dovecot = {
-        enabled = true;
-        filter = "dovecot[mode=aggressive]";
-        maxretry = 3;
-      };
-      postfix = {
-        enabled = true;
-        filter = "postfix[mode=aggressive]";
-        maxretry = 3;
-      };
-    };
-  };
+  #  services.fail2ban = {
+  #   enable = true;
+  #   jails = {
+  #     dovecot = {
+  #       enabled = true;
+  #       filter = "dovecot[mode=aggressive]";
+  #       maxretry = 3;
+  #     };
+  #     postfix = {
+  #       enabled = true;
+  #       filter = "postfix[mode=aggressive]";
+  #       maxretry = 3;
+  #     };
+  #   };
+  # };
 
 
   # ACME configuration for Let's Encrypt certificates (only if web or mail service is enabled)
