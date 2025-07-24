@@ -82,7 +82,7 @@ in
         maxretry = 3;
       };
     };
-  }
+  };
 
 
   # ACME configuration for Let's Encrypt certificates (only if web or mail service is enabled)
