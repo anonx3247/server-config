@@ -28,9 +28,7 @@ let
   );
 
   # Convert the allowed senders to the format Postfix expects
-  senderWhitelist = lib.mkDefault (
-    builtins.mapAttrsToList (key: value: "${key} ${value}") allowedSenders
-  );
+  senderWhitelist = builtins.mapAttrsToList (key: value: "${key} ${value}") allowedSenders;
 
   senderWhitelistContent = lib.strings.concatStringsSep "\n" senderWhitelist;
 
