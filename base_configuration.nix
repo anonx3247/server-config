@@ -67,6 +67,9 @@ in
     recommendedTlsSettings = true;
   };
 
+  # Fail2Ban configuration
+  services.fail2ban.enable = true;
+
 
   # ACME configuration for Let's Encrypt certificates (only if web or mail service is enabled)
   security.acme = lib.mkIf (services.web || services.mail || services.git) {

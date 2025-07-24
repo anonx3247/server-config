@@ -101,7 +101,7 @@ in
     # Submission options
     submissionOptions = {
       smtpd_client_restrictions = "permit_sasl_authenticated,reject";
-      smtpd_tls_security_level = "may";
+      smtpd_tls_security_level = "encrypt";
       smtpd_sasl_type = "dovecot";
       smtpd_sasl_path = "/var/lib/postfix/queue/private/auth";
       smtpd_sasl_auth_enable = "yes";
