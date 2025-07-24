@@ -86,7 +86,7 @@ in
       milter_default_action = "tempfail";
       smtpd_client_message_rate_limit = 30; # only 30 emails per hour
       smtpd_client_restrictions = [
-        "check_sender_access hash:/etc/postfix/sender_whitelist"
+        "check_sender_access ${pkgs.writeText "sender_whitelist" senderWhitelist}"
         "permit_mynetworks"
         "permit_sasl_authenticated" 
         "reject_unknown_reverse_client"
@@ -99,11 +99,6 @@ in
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
       # content_filter = "spamassassin";
     };
-
-    # Add the sender whitelist directly into the Postfix config
-    extraConfig = ''
-      sender_whitelist = ${lib.toFile "sender_whitelist" senderWhitelist};
-    '';
 
     # Enable header checks (disabled while SpamAssassin is disabled)
     # enableHeaderChecks = true;
@@ -199,4 +194,7 @@ in
 
   # Open email-related firewall ports
   networking.firewall.allowedTCPPorts = [ 25 587 465 143 993 ];
+
+
+  pkgs.writeText "sender_whitelist" senderWhitelist;
 } 
