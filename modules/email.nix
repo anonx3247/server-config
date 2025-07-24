@@ -21,6 +21,17 @@ let
     };
   };
 
+  allowedSenders = lib.listToAttrs (
+    map (user: {
+      "${user}@${domain}" = "OK";
+    }) users
+  );
+
+  # Convert the allowed senders to the format Postfix expects
+  senderWhitelist = lib.mkDefault (
+    builtins.mapAttrsToList (key: value: "${key} ${value}") allowedSenders
+  );
+
   # Extract hostname from domain (first part before dot)
   hostname = builtins.head (lib.strings.splitString "." domain);
 in
@@ -75,6 +86,7 @@ in
       milter_default_action = "tempfail";
       smtpd_client_message_rate_limit = 30; # only 30 emails per hour
       smtpd_client_restrictions = [
+        "check_sender_access hash:/etc/postfix/sender_whitelist"
         "permit_mynetworks"
         "permit_sasl_authenticated" 
         "reject_unknown_reverse_client"
@@ -87,6 +99,11 @@ in
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
       # content_filter = "spamassassin";
     };
+
+    # Add the sender whitelist directly into the Postfix config
+    extraConfig = ''
+      sender_whitelist = ${lib.toFile "sender_whitelist" senderWhitelist};
+    '';
 
     # Enable header checks (disabled while SpamAssassin is disabled)
     # enableHeaderChecks = true;
