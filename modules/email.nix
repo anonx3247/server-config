@@ -32,7 +32,9 @@ let
     builtins.mapAttrsToList (key: value: "${key} ${value}") allowedSenders
   );
 
-  senderWhitelistFile = pkgs.writeText "sender_whitelist" senderWhitelist;
+  senderWhitelistContent = lib.strings.concatStringsSep "\n" senderWhitelist;
+
+  senderWhitelistFile = pkgs.writeText "sender_whitelist" senderWhitelistContent;
 
   # Extract hostname from domain (first part before dot)
   hostname = builtins.head (lib.strings.splitString "." domain);
