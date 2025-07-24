@@ -68,7 +68,6 @@ in
       inet_interfaces = "all";
       mynetworks = [
         "127.0.0.0/8"
-        "0.0.0.0/0"
       ];
       smtp_tls_security_level = "encrypt"; # force encryption 
       smtpd_milters = "inet:127.0.0.1:8891";
@@ -77,8 +76,12 @@ in
       smtpd_client_message_rate_limit = 30; # only 30 emails per hour
       smtpd_client_restrictions = [
         "permit_mynetworks"
+        "permit_sasl_authenticated" 
+        "reject_unknown_reverse_client"
         "reject_rbl_client zen.spamhaus.org"
         "reject_rbl_client bl.spamcop.net"
+        "reject_rbl_client b.barracudacentral.org"
+        "reject_rbl_client dnsbl.sorbs.net"
       ];
 
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
