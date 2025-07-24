@@ -32,6 +32,8 @@ let
     builtins.mapAttrsToList (key: value: "${key} ${value}") allowedSenders
   );
 
+  senderWhitelistFile = pkgs.writeText "sender_whitelist" senderWhitelist;
+
   # Extract hostname from domain (first part before dot)
   hostname = builtins.head (lib.strings.splitString "." domain);
 in
@@ -86,7 +88,7 @@ in
       milter_default_action = "tempfail";
       smtpd_client_message_rate_limit = 30; # only 30 emails per hour
       smtpd_client_restrictions = [
-        "check_sender_access ${pkgs.writeText "sender_whitelist" senderWhitelist}"
+        "check_sender_access ${senderWhitelistFile}"
         "permit_mynetworks"
         "permit_sasl_authenticated" 
         "reject_unknown_reverse_client"
