@@ -197,6 +197,4 @@ in
   # Open email-related firewall ports
   networking.firewall.allowedTCPPorts = [ 25 587 465 143 993 ];
 
-
-  pkgs.writeText "sender_whitelist" senderWhitelist;
 } 
