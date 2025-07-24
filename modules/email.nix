@@ -70,10 +70,17 @@ in
         "127.0.0.0/8"
         "0.0.0.0/0"
       ];
-      smtp_tls_security_level = "may";
+      smtp_tls_security_level = "encrypt"; # force encryption 
       smtpd_milters = "inet:127.0.0.1:8891";
       non_smtpd_milters = "inet:127.0.0.1:8891";
       milter_default_action = "tempfail";
+      smtpd_client_message_rate_limit = 30; # only 30 emails per hour
+      smtpd_client_restrictions = [
+        "permit_mynetworks"
+        "reject_rbl_client zen.spamhaus.org"
+        "reject_rbl_client bl.spamcop.net"
+      ];
+
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
       # content_filter = "spamassassin";
     };
