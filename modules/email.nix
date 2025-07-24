@@ -21,14 +21,10 @@ let
     };
   };
 
-  allowedSenders = lib.listToAttrs (
-    map (user: {
-      "${user}@${domain}" = "OK";
-    }) users
-  );
+  allowedSenders = map (user: "${user}@${domain}") users;
 
   # Convert the allowed senders to the format Postfix expects
-  senderWhitelist = builtins.attrsToList (key: value: "${key} ${value}") allowedSenders;
+  senderWhitelist = builtins.map (email: "${email} OK") allowedSenders;
 
   senderWhitelistContent = lib.strings.concatStringsSep "\n" senderWhitelist;
 
