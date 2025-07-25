@@ -28,8 +28,6 @@ let
 
   senderWhitelistContent = lib.strings.concatStringsSep "\n" senderWhitelist;
 
-  senderWhitelistFile = pkgs.writeText "sender_whitelist" senderWhitelistContent;
-
   # Extract hostname from domain (first part before dot)
   hostname = builtins.head (lib.strings.splitString "." domain);
 in
@@ -72,6 +70,9 @@ in
       "${domain}"
     ];
 
+    # Define map files that Postfix can use
+    mapFiles.sender_whitelist = pkgs.writeText "sender_whitelist" senderWhitelistContent;
+
     # Basic SMTP configuration
     config = {
       inet_interfaces = "all";
@@ -84,7 +85,7 @@ in
       milter_default_action = "tempfail";
       smtpd_client_message_rate_limit = 30; # only 30 emails per hour
       smtpd_client_restrictions = [
-        "check_sender_access ${senderWhitelistFile}"
+        "check_sender_access hash:/var/lib/postfix/conf/sender_whitelist"
         "permit_mynetworks"
         "permit_sasl_authenticated" 
         "reject_unknown_reverse_client"
