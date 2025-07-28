@@ -88,7 +88,7 @@ in
         "check_sender_access hash:/var/lib/postfix/conf/sender_whitelist"
         "permit_mynetworks"
         "permit_sasl_authenticated" 
-        "reject_unknown_reverse_client"
+        "reject_unknown_reverse_client_hostname"
         "reject_rbl_client zen.spamhaus.org"
         "reject_rbl_client bl.spamcop.net"
         "reject_rbl_client b.barracudacentral.org"
