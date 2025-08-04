@@ -89,10 +89,10 @@ in
         "permit_mynetworks"
         "permit_sasl_authenticated" 
         "reject_unknown_reverse_client_hostname"
-        "reject_rbl_client zen.spamhaus.org"
-        "reject_rbl_client bl.spamcop.net"
-        "reject_rbl_client b.barracudacentral.org"
-        "reject_rbl_client dnsbl.sorbs.net"
+        #"reject_rbl_client zen.spamhaus.org"
+        #"reject_rbl_client bl.spamcop.net"
+        #"reject_rbl_client b.barracudacentral.org"
+        #"reject_rbl_client dnsbl.sorbs.net"
       ];
 
       # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
