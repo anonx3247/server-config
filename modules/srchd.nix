@@ -34,10 +34,12 @@ in
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
 
+    path = [ pkgs.bash pkgs.coreutils pkgs.git nodejs ];
+
     serviceConfig = {
       Type = "simple";
       WorkingDirectory = srchdDir;
-      ExecStart = "${nodejs}/bin/npx tsx src/srchd.ts serve -p ${toString srchdPort} ${authArgs}";
+      ExecStart = "${nodejs}/bin/node ${srchdDir}/node_modules/.bin/tsx src/srchd.ts serve -p ${toString srchdPort} ${authArgs}";
       Restart = "always";
       RestartSec = 10;
 
@@ -50,21 +52,19 @@ in
 
     # Ensure the repo is cloned and dependencies installed before starting
     preStart = ''
-      # Clone or update srchd repo
+      # Clone srchd repo if not present
       if [ ! -d "${srchdDir}/.git" ]; then
         ${pkgs.git}/bin/git clone https://github.com/dust-tt/srchd.git ${srchdDir}
-      else
-        cd ${srchdDir}
-        ${pkgs.git}/bin/git fetch origin
-        ${pkgs.git}/bin/git reset --hard origin/main
       fi
 
-      # Install dependencies
+      # Install dependencies if node_modules doesn't exist
       cd ${srchdDir}
-      ${nodejs}/bin/npm install --production=false
+      if [ ! -d "${srchdDir}/node_modules" ]; then
+        ${nodejs}/bin/npm install --production=false
+      fi
 
       # Run database migrations
-      ${nodejs}/bin/npx drizzle-kit migrate || true
+      ${nodejs}/bin/node ${srchdDir}/node_modules/.bin/drizzle-kit migrate || true
     '';
   };
 
