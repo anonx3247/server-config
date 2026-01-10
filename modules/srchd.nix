@@ -420,20 +420,10 @@ in
       ];
 
       EnvironmentFile = "/etc/srchd/env";
+
+      # Run migrations before starting (using ExecStartPre with specifier)
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'cd ${projectsDir}/%i && ${nodejs}/bin/node ${srchdBase}/node_modules/.bin/drizzle-kit migrate || true'";
     };
-
-    preStart = ''
-      # Ensure symlinks are set up
-      cd ${projectsDir}/%i
-      for file in node_modules src package.json package-lock.json tsconfig.json drizzle.config.ts; do
-        if [ -e "${srchdBase}/$file" ] && [ ! -e "./$file" ]; then
-          ln -sf "${srchdBase}/$file" "./$file"
-        fi
-      done
-
-      # Run migrations for this project's database
-      ${nodejs}/bin/node ${srchdBase}/node_modules/.bin/drizzle-kit migrate || true
-    '';
   };
 
   # Discovery timer - runs periodically to find new projects
@@ -478,6 +468,7 @@ in
 
   # Ensure the include file exists (empty initially)
   system.activationScripts.srchd-nginx-conf = ''
+    mkdir -p /etc/nginx
     touch /etc/nginx/srchd-projects.conf
   '';
 }
