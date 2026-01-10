@@ -308,16 +308,23 @@ INDEX_HEADER
       subdomain="$project.srchd.${domain}"
       cert_dir="/var/lib/acme/$subdomain"
 
+      # Get display title from .title file, or use project name
+      if [ -f "$PROJECTS_DIR/$project/.title" ]; then
+        title=$(cat "$PROJECTS_DIR/$project/.title")
+      else
+        title="$project"
+      fi
+
       if [ -f "$cert_dir/fullchain.pem" ]; then
         cat >> "$INDEX_FILE" << INDEX_PROJECT_SSL
   <div class="project">
-    <a href="https://$subdomain/">$project</a>
+    <a href="https://$subdomain/">$title</a>
   </div>
 INDEX_PROJECT_SSL
       else
         cat >> "$INDEX_FILE" << INDEX_PROJECT_NOSSL
   <div class="project">
-    <a href="http://$subdomain/">$project</a>
+    <a href="http://$subdomain/">$title</a>
     <span class="no-ssl">(pending SSL)</span>
   </div>
 INDEX_PROJECT_NOSSL
