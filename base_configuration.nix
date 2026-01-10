@@ -1,7 +1,7 @@
 # Base NixOS configuration that accepts users and domain parameters
 # This is used as a template to generate the final configuration.nix
 
-{ config, lib, pkgs, users, domain, webPrefix, services, ... }:
+{ config, lib, pkgs, users, domain, webPrefix, services, srchdAuth ? "", ... }:
 
 let
   # Read SSH key from file
@@ -20,6 +20,8 @@ let
     (import ./modules/git.nix { inherit config lib pkgs domain; })
   ] ++ lib.optionals services.web [
     (import ./modules/web.nix { inherit config lib pkgs domain webPrefix; })
+  ] ++ lib.optionals services.srchd [
+    (import ./modules/srchd.nix { inherit config lib pkgs domain srchdAuth; })
   ];
 
 in
@@ -58,8 +60,8 @@ in
     openssh.authorizedKeys.keys = [ rootSshKey ];
   };
 
-  # Nginx base configuration (only if web service is enabled)
-  services.nginx = lib.mkIf (services.web || services.mail || services.git) {
+  # Nginx base configuration (only if any web-facing service is enabled)
+  services.nginx = lib.mkIf (services.web || services.mail || services.git || services.srchd) {
     enable = true;
     recommendedGzipSettings = true;
     recommendedOptimisation = true;
@@ -85,8 +87,8 @@ in
   # };
 
 
-  # ACME configuration for Let's Encrypt certificates (only if web or mail service is enabled)
-  security.acme = lib.mkIf (services.web || services.mail || services.git) {
+  # ACME configuration for Let's Encrypt certificates (only if any web-facing service is enabled)
+  security.acme = lib.mkIf (services.web || services.mail || services.git || services.srchd) {
     acceptTerms = true;
     defaults.email = "security@${domain}";
   };

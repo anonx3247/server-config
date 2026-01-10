@@ -32,7 +32,7 @@ read_config() {
         echo "Previous configuration:"
         echo "  Domain: $domain"
         echo "  Web prefix: $web_domain_prefix"
-        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web"
+        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd"
         echo
         if [ "$ASSUME_YES" = true ]; then
             echo "Using -y flag: using existing configuration"
@@ -58,6 +58,8 @@ web_domain_prefix="$web_domain_prefix"
 enable_mail="$enable_mail"
 enable_git="$enable_git"
 enable_web="$enable_web"
+enable_srchd="$enable_srchd"
+srchd_auth="$srchd_auth"
 EOF
     echo "Configuration saved to $CONFIG_FILE"
 }
@@ -75,6 +77,8 @@ if ! read_config; then
         enable_mail="true"
         enable_git="true"
         enable_web="true"
+        enable_srchd="true"
+        srchd_auth=""
     else
         read -p "Enable mail server? (Y/n): " -n 1 -r
         echo
@@ -98,6 +102,17 @@ if ! read_config; then
             enable_web="false"
         else
             enable_web="true"
+        fi
+
+        read -p "Enable srchd experiment viewer? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_srchd="false"
+            srchd_auth=""
+        else
+            enable_srchd="true"
+            echo "Enter srchd basic auth credentials (user:password) or leave empty for no auth:"
+            read -r srchd_auth
         fi
     fi
     
@@ -152,6 +167,9 @@ fi
 if [ "$enable_web" = "true" ]; then
     echo "    Web server: $web_domain_prefix.$domain"
 fi
+if [ "$enable_srchd" = "true" ]; then
+    echo "    srchd viewer: srchd.$domain"
+fi
 echo
 
 # Function to generate configuration.nix
@@ -176,15 +194,17 @@ let
   definedUsers = [
 $users_list
   ];
-  
+
   # Domain configuration
   domainName = "$domain";
   webDomainPrefix = "$web_domain_prefix";
-  
+
   # Service configuration
   enableMail = $enable_mail;
   enableGit = $enable_git;
   enableWeb = $enable_web;
+  enableSrchd = $enable_srchd;
+  srchdAuthCredentials = "$srchd_auth";
 in
 
 import ./$BASE_CONFIG {
@@ -192,10 +212,12 @@ import ./$BASE_CONFIG {
   users = definedUsers;
   domain = domainName;
   webPrefix = webDomainPrefix;
+  srchdAuth = srchdAuthCredentials;
   services = {
     mail = enableMail;
     git = enableGit;
     web = enableWeb;
+    srchd = enableSrchd;
   };
 }
 EOF
@@ -294,6 +316,9 @@ fi
 if [ "$enable_web" = "true" ]; then
     echo "Web: https://$web_domain_prefix.$domain"
 fi
+if [ "$enable_srchd" = "true" ]; then
+    echo "srchd: https://srchd.$domain"
+fi
 echo
 
 if [ "$enable_mail" = "true" ]; then
@@ -328,6 +353,9 @@ if [ "$enable_mail" = "true" ]; then
 fi
 if [ "$enable_git" = "true" ]; then
     echo "  git.$domain -> [your server IP]"
+fi
+if [ "$enable_srchd" = "true" ]; then
+    echo "  srchd.$domain -> [your server IP]"
 fi
 if [ "$enable_mail" = "true" ]; then
     echo "MX Record:"
