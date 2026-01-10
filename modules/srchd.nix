@@ -329,9 +329,6 @@ INDEX_PROJECT_NOSSL
     fi
 
     cat >> "$INDEX_FILE" << 'INDEX_FOOTER'
-  <hr>
-  <p><small>To add a project: <code>mkdir /var/lib/srchd-projects/&lt;name&gt; && cp db.sqlite /var/lib/srchd-projects/&lt;name&gt;/</code><br>
-  Then run: <code>srchd-discover</code></small></p>
 </body>
 </html>
 INDEX_FOOTER
