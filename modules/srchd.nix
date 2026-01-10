@@ -166,14 +166,8 @@ NGINX_HTTP_ONLY
     done
 
     # Reload nginx first (needed for ACME challenges)
-    if nginx -t 2>/dev/null; then
-      echo "Reloading nginx..."
-      systemctl reload nginx || true
-    else
-      echo "WARNING: nginx config test failed"
-      cat "$NGINX_CONF"
-      exit 1
-    fi
+    echo "Reloading nginx..."
+    systemctl reload nginx || echo "WARNING: nginx reload failed"
 
     # Request certificates for projects that don't have them
     for project in $PROJECTS; do
@@ -281,9 +275,8 @@ NGINX_HTTP_ONLY2
     done
 
     # Final nginx reload
-    if nginx -t 2>/dev/null; then
-      systemctl reload nginx || true
-    fi
+    echo "Final nginx reload..."
+    systemctl reload nginx || echo "WARNING: nginx reload failed"
 
     # Generate index page
     echo "Generating index page..."
@@ -441,7 +434,7 @@ in
     after = [ "srchd-base.service" "nginx.service" ];
     requires = [ "srchd-base.service" ];
 
-    path = [ pkgs.bash pkgs.coreutils pkgs.systemd pkgs.nginx pkgs.gnugrep pkgs.gawk pkgs.certbot ];
+    path = [ pkgs.bash pkgs.coreutils pkgs.systemd pkgs.gnugrep pkgs.gawk pkgs.certbot ];
 
     serviceConfig = {
       Type = "oneshot";
