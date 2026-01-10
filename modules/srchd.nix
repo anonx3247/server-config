@@ -187,10 +187,13 @@ NGINX_HTTP_ONLY
           --deploy-hook "systemctl reload nginx" \
           2>&1 || echo "  (Certificate request failed - check DNS for $subdomain)"
 
-        # Certbot stores certs in /etc/letsencrypt, create symlinks
+        # Certbot stores certs in /etc/letsencrypt, copy them (symlinks don't work due to permissions)
         if [ -d "/etc/letsencrypt/live/$subdomain" ]; then
-          ln -sf "/etc/letsencrypt/live/$subdomain/fullchain.pem" "$cert_dir/fullchain.pem"
-          ln -sf "/etc/letsencrypt/live/$subdomain/privkey.pem" "$cert_dir/key.pem"
+          cp "/etc/letsencrypt/live/$subdomain/fullchain.pem" "$cert_dir/fullchain.pem"
+          cp "/etc/letsencrypt/live/$subdomain/privkey.pem" "$cert_dir/key.pem"
+          chmod 644 "$cert_dir/fullchain.pem"
+          chmod 640 "$cert_dir/key.pem"
+          chown root:nginx "$cert_dir/key.pem"
           echo "  Certificate obtained!"
         fi
       fi
