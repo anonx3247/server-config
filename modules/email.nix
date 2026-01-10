@@ -80,6 +80,7 @@ in
         "127.0.0.0/8"
       ];
       smtp_tls_security_level = "encrypt"; # force encryption 
+      smtp_bind_address6 = "2001:19f0:5:316b:5400:2ff:feea:4f9d";
       smtpd_milters = "inet:127.0.0.1:8891";
       non_smtpd_milters = "inet:127.0.0.1:8891";
       milter_default_action = "tempfail";
