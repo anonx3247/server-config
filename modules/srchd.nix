@@ -48,6 +48,9 @@ in
         "NODE_ENV=production"
         "HOME=${srchdDir}"
       ];
+
+      # Load API keys from env file
+      EnvironmentFile = "/etc/srchd/env";
     };
 
     # Ensure the repo is cloned and dependencies installed before starting
