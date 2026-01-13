@@ -22,6 +22,8 @@ let
     (import ./modules/web.nix { inherit config lib pkgs domain webPrefix; })
   ] ++ lib.optionals services.srchd [
     (import ./modules/srchd.nix { inherit config lib pkgs domain srchdAuth; })
+  ] ++ lib.optionals services.msrchd [
+    (import ./modules/msrchd.nix { inherit config lib pkgs domain srchdAuth; })
   ];
 
 in
@@ -61,7 +63,7 @@ in
   };
 
   # Nginx base configuration (only if any web-facing service is enabled)
-  services.nginx = lib.mkIf (services.web || services.mail || services.git || services.srchd) {
+  services.nginx = lib.mkIf (services.web || services.mail || services.git || services.srchd || services.msrchd) {
     enable = true;
     recommendedGzipSettings = true;
     recommendedOptimisation = true;
@@ -88,7 +90,7 @@ in
 
 
   # ACME configuration for Let's Encrypt certificates (only if any web-facing service is enabled)
-  security.acme = lib.mkIf (services.web || services.mail || services.git || services.srchd) {
+  security.acme = lib.mkIf (services.web || services.mail || services.git || services.srchd || services.msrchd) {
     acceptTerms = true;
     defaults.email = "security@${domain}";
   };

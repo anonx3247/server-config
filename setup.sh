@@ -32,7 +32,7 @@ read_config() {
         echo "Previous configuration:"
         echo "  Domain: $domain"
         echo "  Web prefix: $web_domain_prefix"
-        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd"
+        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd, msrchd=$enable_msrchd"
         echo
         if [ "$ASSUME_YES" = true ]; then
             echo "Using -y flag: using existing configuration"
@@ -60,6 +60,7 @@ enable_git="$enable_git"
 enable_web="$enable_web"
 enable_srchd="$enable_srchd"
 srchd_auth="$srchd_auth"
+enable_msrchd="$enable_msrchd"
 EOF
     echo "Configuration saved to $CONFIG_FILE"
 }
@@ -79,6 +80,7 @@ if ! read_config; then
         enable_web="true"
         enable_srchd="true"
         srchd_auth=""
+        enable_msrchd="true"
     else
         read -p "Enable mail server? (Y/n): " -n 1 -r
         echo
@@ -113,6 +115,14 @@ if ! read_config; then
             enable_srchd="true"
             echo "Enter srchd basic auth credentials (user:password) or leave empty for no auth:"
             read -r srchd_auth
+        fi
+
+        read -p "Enable msrchd experiment viewer (your fork)? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_msrchd="false"
+        else
+            enable_msrchd="true"
         fi
     fi
     
@@ -170,6 +180,9 @@ fi
 if [ "$enable_srchd" = "true" ]; then
     echo "    srchd viewer: srchd.$domain"
 fi
+if [ "$enable_msrchd" = "true" ]; then
+    echo "    msrchd viewer: msrchd.$domain"
+fi
 echo
 
 # Function to generate configuration.nix
@@ -204,6 +217,7 @@ $users_list
   enableGit = $enable_git;
   enableWeb = $enable_web;
   enableSrchd = $enable_srchd;
+  enableMsrchd = $enable_msrchd;
   srchdAuthCredentials = "$srchd_auth";
 in
 
@@ -218,6 +232,7 @@ import ./$BASE_CONFIG {
     git = enableGit;
     web = enableWeb;
     srchd = enableSrchd;
+    msrchd = enableMsrchd;
   };
 }
 EOF
@@ -319,6 +334,9 @@ fi
 if [ "$enable_srchd" = "true" ]; then
     echo "srchd: https://srchd.$domain"
 fi
+if [ "$enable_msrchd" = "true" ]; then
+    echo "msrchd: https://msrchd.$domain"
+fi
 echo
 
 if [ "$enable_mail" = "true" ]; then
@@ -356,6 +374,10 @@ if [ "$enable_git" = "true" ]; then
 fi
 if [ "$enable_srchd" = "true" ]; then
     echo "  srchd.$domain -> [your server IP]"
+fi
+if [ "$enable_msrchd" = "true" ]; then
+    echo "  msrchd.$domain -> [your server IP]"
+    echo "  *.msrchd.$domain -> [your server IP]"
 fi
 if [ "$enable_mail" = "true" ]; then
     echo "MX Record:"
