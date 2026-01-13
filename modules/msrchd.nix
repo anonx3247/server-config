@@ -388,7 +388,7 @@ NGINX_HTTP_ONLY2
   <h1>MSRCHD</h1>
   <nav class="nav">
     <a href="https://anas.lecaillon.com"><i class="fas fa-home"></i> Home</a>
-    <a href="https://github.com/anonx3247/srchd"><i class="fab fa-github"></i> GitHub</a>
+    <a href="https://github.com/anonx3247/msrchd"><i class="fab fa-github"></i> GitHub</a>
   </nav>
   <h2>Experiment Viewer</h2>
   <div class="projects">
@@ -479,7 +479,7 @@ in
     script = ''
       # Clone msrchd repo if not present
       if [ ! -d "${msrchdBase}/.git" ]; then
-        ${pkgs.git}/bin/git clone https://github.com/anonx3247/srchd.git ${msrchdBase}
+        ${pkgs.git}/bin/git clone https://github.com/anonx3247/msrchd.git ${msrchdBase}
       fi
 
       # Install dependencies if node_modules doesn't exist
