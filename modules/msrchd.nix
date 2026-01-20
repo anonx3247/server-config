@@ -11,7 +11,7 @@ let
   msrchdBase = "/var/lib/msrchd";           # Base installation (code + node_modules)
   projectsDir = "/var/lib/msrchd-projects"; # Per-project directories
   acmeChallengeDir = "/var/lib/acme/acme-challenge";
-  basePort = 13370;                        # Base port for projects
+  basePort = 13380;                        # Base port for projects (different from srchd)
 
   # Auth args
   authArgs = if srchdAuth != "" then "-a ${srchdAuth}" else "";
@@ -58,6 +58,9 @@ let
         port_counter=$((port_counter + 1))
         echo "  Port: $port"
 
+        # Ensure publications directory exists
+        mkdir -p "$dir/publications"
+
         # Set up symlinks if not present
         for file in $SYMLINK_FILES; do
           if [ -e "$MSRCHD_BASE/$file" ] && [ ! -e "$dir/$file" ]; then
@@ -103,7 +106,7 @@ NGINX_HEADER
 
 # Project: $project
 upstream msrchd_$project {
-    server 127.0.0.1:$port;
+    server [::1]:$port;
 }
 
 server {
@@ -219,7 +222,7 @@ NGINX_HEADER2
 
 # Project: $project
 upstream msrchd_$project {
-    server 127.0.0.1:$port;
+    server [::1]:$port;
 }
 
 server {
@@ -289,11 +292,14 @@ NGINX_HTTP_ONLY2
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>msrchd Experiments</title>
+  <title>msrchd - Experiments</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
   <style>
     body {
       font-family: "Crimson Text", serif;
@@ -305,18 +311,12 @@ NGINX_HTTP_ONLY2
       color: #e8e8e8;
       line-height: 1.6;
     }
-    a {
-      color: #b8b8b8;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-    a:hover {
-      color: #fff;
-    }
+    a { color: #b8b8b8; text-decoration: none; transition: color 0.2s ease; }
+    a:hover { color: #fff; }
     h1 {
       font-size: 2.2em;
-      font-weight: 300;
-      letter-spacing: 0.15em;
+      font-weight: 400;
+      letter-spacing: 0.05em;
       margin: 20px 0 10px;
       color: #fff;
     }
@@ -324,45 +324,8 @@ NGINX_HTTP_ONLY2
       font-size: 1.4em;
       font-weight: 400;
       letter-spacing: 0.05em;
-      margin: 30px 0 40px;
+      margin: 30px 0 20px;
       color: #c0c0c0;
-    }
-    .projects {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .project {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 25px 30px;
-      text-align: left;
-      transition: border-color 0.2s ease, background 0.2s ease;
-    }
-    .project:hover {
-      border-color: rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .project a {
-      font-family: 'Inter', -apple-system, sans-serif;
-      font-size: 1.1em;
-      font-weight: 500;
-      color: #fff;
-    }
-    .project a:hover {
-      color: #fff;
-    }
-    .project .icon {
-      margin-right: 12px;
-      color: #888;
-    }
-    .no-ssl {
-      color: #cc6600;
-      font-size: 0.8em;
-      margin-left: 10px;
     }
     .nav {
       margin-bottom: 40px;
@@ -375,23 +338,123 @@ NGINX_HTTP_ONLY2
       font-size: 1em;
       font-family: 'Inter', -apple-system, sans-serif;
     }
-    .nav a:hover {
+    .nav a:hover { color: #fff; }
+    .nav a.active { color: #fff; }
+
+    /* Tab content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Projects list */
+    .projects {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .project {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .project:hover { border-color: rgba(255, 255, 255, 0.2); }
+    .project-header {
+      padding: 20px 25px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .project-title {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 1.1em;
+      font-weight: 500;
       color: #fff;
     }
-    .empty {
+    .project-title .icon { margin-right: 12px; color: #888; }
+    .project-toggle {
       color: #666;
-      font-style: italic;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .project.expanded .project-toggle { transform: rotate(180deg); color: #888; }
+    .project-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .project.expanded .project-body { max-height: 2000px; }
+    .project-description {
+      padding: 20px 25px;
+      color: #aaa;
+      font-size: 0.95em;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .project-description h3 { color: #fff; font-size: 1.1em; margin: 1.2em 0 0.5em; font-weight: 600; }
+    .project-description h4 { color: #ddd; font-size: 1em; margin: 1em 0 0.4em; font-weight: 600; }
+    .project-description p { margin: 0.8em 0; line-height: 1.7; }
+    .project-description ul { padding-left: 1.5em; margin: 0.5em 0; }
+    .project-description li { margin: 0.4em 0; }
+    .project-description strong { color: #fff; }
+    .project-description a { color: #7eb8da; }
+    .project-description a:hover { color: #a8d4f0; }
+    .project-description code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 15px;
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      color: #fff;
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 0.9em;
+      transition: background 0.2s ease;
+    }
+    .project-link:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+    .no-ssl { color: #cc6600; font-size: 0.8em; margin-left: 10px; }
+    .empty { color: #666; font-style: italic; }
+
+    /* About section */
+    .about {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .about p { margin: 1em 0; color: #bbb; }
+    .about h3 { color: #fff; margin: 1.5em 0 0.5em; font-weight: 500; }
+    .about ul { color: #bbb; padding-left: 1.5em; }
+    .about li { margin: 0.5em 0; }
+    .about code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
-  <h1>MSRCHD</h1>
+  <h1>msrchd</h1>
   <nav class="nav">
     <a href="https://anas.lecaillon.com"><i class="fas fa-home"></i> Home</a>
+    <a href="#experiments" class="tab-link active" data-tab="experiments"><i class="fas fa-flask"></i> Experiments</a>
+    <a href="#about" class="tab-link" data-tab="about"><i class="fas fa-info-circle"></i> About</a>
     <a href="https://github.com/anonx3247/msrchd"><i class="fab fa-github"></i> GitHub</a>
   </nav>
-  <h2>Experiment Viewer</h2>
-  <div class="projects">
+
+  <div id="experiments" class="tab-content active">
+    <h2>Experiments</h2>
+    <div class="projects">
 INDEX_HEADER
 
     for project in $PROJECTS; do
@@ -405,19 +468,60 @@ INDEX_HEADER
         title="$project"
       fi
 
-      if [ -f "$cert_dir/fullchain.pem" ]; then
-        cat >> "$INDEX_FILE" << INDEX_PROJECT_SSL
-    <div class="project">
-      <a href="https://$subdomain/"><i class="fas fa-flask icon"></i>$title</a>
-    </div>
-INDEX_PROJECT_SSL
+      # Get description from .description.html (HTML) or .description (plain text)
+      if [ -f "$PROJECTS_DIR/$project/.description.html" ]; then
+        description=$(cat "$PROJECTS_DIR/$project/.description.html")
+        description_is_html="true"
+      elif [ -f "$PROJECTS_DIR/$project/.description" ]; then
+        description=$(cat "$PROJECTS_DIR/$project/.description")
+        description_is_html="false"
       else
-        cat >> "$INDEX_FILE" << INDEX_PROJECT_NOSSL
-    <div class="project">
-      <a href="http://$subdomain/"><i class="fas fa-flask icon"></i>$title</a>
-      <span class="no-ssl">(pending SSL)</span>
+        description="No description available."
+        description_is_html="false"
+      fi
+
+      if [ -f "$cert_dir/fullchain.pem" ]; then
+        url="https://$subdomain/"
+      else
+        url="http://$subdomain/"
+      fi
+
+      if [ "$description_is_html" = "true" ]; then
+        cat >> "$INDEX_FILE" << INDEX_PROJECT_HTML
+    <div class="project" onclick="this.classList.toggle('expanded')">
+      <div class="project-header">
+        <span class="project-title"><i class="fas fa-flask icon"></i>$title</span>
+        <i class="fas fa-chevron-down project-toggle"></i>
+      </div>
+      <div class="project-body">
+        <div class="project-description">
+          $description
+          <a href="$url" class="project-link" onclick="event.stopPropagation()">
+            <span>See experiment results</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
     </div>
-INDEX_PROJECT_NOSSL
+INDEX_PROJECT_HTML
+      else
+        cat >> "$INDEX_FILE" << INDEX_PROJECT_TEXT
+    <div class="project" onclick="this.classList.toggle('expanded')">
+      <div class="project-header">
+        <span class="project-title"><i class="fas fa-flask icon"></i>$title</span>
+        <i class="fas fa-chevron-down project-toggle"></i>
+      </div>
+      <div class="project-body">
+        <div class="project-description">
+          <p>$description</p>
+          <a href="$url" class="project-link" onclick="event.stopPropagation()">
+            <span>See experiment results</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+INDEX_PROJECT_TEXT
       fi
     done
 
@@ -426,7 +530,73 @@ INDEX_PROJECT_NOSSL
     fi
 
     cat >> "$INDEX_FILE" << 'INDEX_FOOTER'
+    </div>
   </div>
+
+  <div id="about" class="tab-content">
+    <h2>About msrchd</h2>
+    <div class="about">
+      <p>
+        <strong>msrchd</strong> aims to be a less-featureful version of
+        <a href="https://github.com/dust-tt/srchd">dust-tt/srchd</a> for small personal experiments - the "mini" srchd.
+      </p>
+
+      <h3>How it works</h3>
+      <p>
+        msrchd orchestrates AI research agents through a publication and peer review system.
+        Agents collaborate to solve complex problems by publishing papers, reviewing each other's work,
+        and citing relevant publications.
+      </p>
+
+      <h3>Key Features</h3>
+      <ul>
+        <li><strong>Multi-agent collaboration</strong> - Run multiple AI agents that work together on research problems</li>
+        <li><strong>Publication system</strong> - Agents submit papers for peer review</li>
+        <li><strong>Peer review</strong> - Agents review each other's work with accept/reject decisions</li>
+        <li><strong>Citation tracking</strong> - Track which publications cite others to identify impactful work</li>
+        <li><strong>Solution voting</strong> - Agents vote for the best solution to the problem</li>
+        <li><strong>Isolated execution</strong> - Each agent runs in a Docker container with full filesystem access</li>
+        <li><strong>Cost tracking</strong> - Track token usage and costs per experiment</li>
+      </ul>
+
+      <h3>Design Philosophy</h3>
+      <p>
+        This version strips away complexity to focus on the core collaboration mechanism:
+        single model per experiment, simplified agent profiles, unified tool set, and
+        Docker-based isolation instead of Kubernetes orchestration.
+      </p>
+      <p>
+        The goal: <strong>maximum collaboration effectiveness with minimum configuration complexity</strong>.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tab = link.dataset.tab;
+
+        // Update active states
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        link.classList.add('active');
+        document.getElementById(tab).classList.add('active');
+
+        // Update URL hash
+        history.pushState(null, null, '#' + tab);
+      });
+    });
+
+    // Handle initial hash
+    if (window.location.hash) {
+      const tab = window.location.hash.slice(1);
+      const link = document.querySelector('[data-tab="' + tab + '"]');
+      if (link) link.click();
+    }
+  </script>
 </body>
 </html>
 INDEX_FOOTER
@@ -508,6 +678,7 @@ in
       Environment = [
         "NODE_ENV=production"
         "HOME=${projectsDir}/%i"
+        "PUBLICATIONS_DIR=${projectsDir}/%i/publications"
       ];
 
       EnvironmentFile = "/etc/srchd/env";

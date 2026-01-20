@@ -1,0 +1,55 @@
+<h3>IMO 2025 Formal Verification Experiment</h3>
+
+<p>This experiment tackles International Mathematical Olympiad (IMO) 2025 problems using formal verification in Lean4. The system runs 3 AI agents concurrently using GPT-5.2, with variable costs depending on usage. The agents collaborate through a publication system to formalize proofs and verify solutions.</p>
+
+<p><strong>Performance:</strong> This result achieves somewhere between silver and gold medal standard at the IMO.</p>
+
+<p>All solutions were verified against the official solutions available at: <a href="https://web.evanchen.cc/exams/IMO-2025-notes.pdf">IMO-2025-notes.pdf</a></p>
+
+<h3>Results Summary</h3>
+
+<h4>Fully Solved Problems</h4>
+
+<p><strong>Problems 1 &amp; 5:</strong> Both problems have been completely solved with fully formalized Lean solutions.</p>
+<ul>
+  <li>Problem 1 correctly identifies all solutions as $0, 1, 3$</li>
+  <li>Problem 5 correctly determines the boundary at $\frac{\sqrt{2}}{2}$</li>
+</ul>
+
+<p><strong>Problem 4:</strong> This problem has been fully formalized across 2 separate publications which together provide the complete solution. Interestingly, the models never combined these publications into a single unified proof.</p>
+<ul>
+  <li>The target form of the answer is: $a_1 = 12^e \cdot l \cdot 6$ for $e, l \geq 0$ and $\gcd(l, 10) = 1$</li>
+  <li>The obtained form is: $a_1 = 2^{2k+1} \cdot 3^{\ell} \cdot m$ where $k, \ell, m \geq 0$, $\ell \geq k+1$, and $\gcd(m, 30) = 1$</li>
+</ul>
+
+<p><strong>Problem 2:</strong> This problem has been solved, though one tangent expression was verified using SymPy rather than being formalized in Lean.</p>
+<ul>
+  <li>The verification script <code>sympy_check_corrected.py</code> performs the elimination exactly as described by:
+    <ul>
+      <li>Computing the points $A, B, C, D, P, E, F, H$ in terms of the parameters $(r, R, d)$</li>
+      <li>Solving for the circle passing through points $B, E, F$ in the form $x^2 + y^2 + \alpha x + \beta y + \gamma = 0$</li>
+      <li>Checking the cleared-denominator tangency equation</li>
+    </ul>
+  </li>
+  <li>The script outputs <code>0</code>, which confirms that the tangency identity holds</li>
+</ul>
+
+<h4>Partially Solved Problems</h4>
+
+<p><strong>Problem 6:</strong> A non-optimal general upper bound of $n + \left\lfloor \frac{n-1}{2} \right\rfloor$ was found, though the optimal bound remains unproven.</p>
+
+<p><strong>Problem 3:</strong> This problem is almost complete, with only one remaining gap: proving that $f(3) \neq 3$.</p>
+<ul>
+  <li>The question asks to find the optimal constant $c$ such that $f(n) \leq cn$ for all $n$</li>
+  <li>The target answer is $c = 4$</li>
+  <li>Significant progress has been made:
+    <ul>
+      <li>Proved that $c \geq 4$</li>
+      <li>Proved that $f(p) = 1$ for all odd primes $p$ implies $f(n) \leq 4n$ for all $n \geq 1$</li>
+      <li>Proved that $f(1) = 1$</li>
+      <li>Proved that $f(3) = 1$ implies $f(p) = 1$ for all odd primes $p$</li>
+      <li>Proved that $f(3) \in \{1, 3\}$</li>
+      <li><strong>Still missing:</strong> The proof that $f(3) \neq 3$</li>
+    </ul>
+  </li>
+</ul>
