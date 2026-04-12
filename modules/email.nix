@@ -181,8 +181,25 @@ in
         mail_plugins = $mail_plugins sieve
       }
 
+      protocol imap {
+        mail_plugins = $mail_plugins imap_sieve
+      }
+
       plugin {
         sieve_before = /etc/dovecot/sieve/spam-to-junk.sieve
+
+        # IMAP Sieve: trigger sa-learn when users move messages
+        imapsieve_mailbox1_name = Junk
+        imapsieve_mailbox1_causes = COPY APPEND
+        imapsieve_mailbox1_before = file:/etc/dovecot/sieve/learn-spam.sieve
+
+        imapsieve_mailbox2_name = *
+        imapsieve_mailbox2_from = Junk
+        imapsieve_mailbox2_causes = COPY
+        imapsieve_mailbox2_before = file:/etc/dovecot/sieve/learn-ham.sieve
+
+        sieve_pipe_bin_dir = /etc/dovecot/sieve-pipe
+        sieve_global_extensions = +vnd.dovecot.pipe
       }
     '';
   };
@@ -199,6 +216,35 @@ in
       stop;
     }
   '';
+
+  # IMAP Sieve: learn spam when user moves mail into Junk
+  environment.etc."dovecot/sieve/learn-spam.sieve".text = ''
+    require ["vnd.dovecot.pipe", "copy", "imapsieve"];
+    pipe :copy "sa-learn-spam.sh";
+  '';
+
+  # IMAP Sieve: learn ham when user moves mail out of Junk
+  environment.etc."dovecot/sieve/learn-ham.sieve".text = ''
+    require ["vnd.dovecot.pipe", "copy", "imapsieve"];
+    pipe :copy "sa-learn-ham.sh";
+  '';
+
+  # Pipe scripts that sa-learn reads from stdin
+  environment.etc."dovecot/sieve-pipe/sa-learn-spam.sh" = {
+    mode = "0755";
+    text = ''
+      #!/bin/sh
+      exec ${pkgs.spamassassin}/bin/sa-learn --spam
+    '';
+  };
+
+  environment.etc."dovecot/sieve-pipe/sa-learn-ham.sh" = {
+    mode = "0755";
+    text = ''
+      #!/bin/sh
+      exec ${pkgs.spamassassin}/bin/sa-learn --ham
+    '';
+  };
 
   # SpamAssassin - Anti-spam
   services.spamassassin = {
