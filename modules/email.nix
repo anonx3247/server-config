@@ -54,6 +54,12 @@ in
     };
   };
 
+  # Ensure mail services reload when ACME cert is renewed
+  security.acme.certs."mail.${domain}".reloadServices = [
+    "postfix.service"
+    "dovecot2.service"
+  ];
+
   # Postfix - SMTP server
   services.postfix = {
     enable = true;
@@ -96,22 +102,34 @@ in
         #"reject_rbl_client dnsbl.sorbs.net"
       ];
 
-      # Remove content_filter for now - SpamAssassin integration via amavis would be more complex
-      # content_filter = "spamassassin";
-    };
+      content_filter = "spamassassin:dummy";
 
-    # Enable header checks (disabled while SpamAssassin is disabled)
-    # enableHeaderChecks = true;
-    # headerChecks = [
-    #   {
-    #     pattern = "/^X-Spam-Flag:/";
-    #     action = "REDIRECT spam@${domain}";
-    #   }
-    # ];
+      # Use Dovecot LDA for local delivery so Sieve filtering runs
+      mailbox_command = "${pkgs.dovecot}/libexec/dovecot/deliver";
+    };
 
     # SSL/TLS configuration
     sslCert = "/var/lib/acme/mail.${domain}/cert.pem";
     sslKey = "/var/lib/acme/mail.${domain}/key.pem";
+
+    # SpamAssassin content filter transport
+    masterConfig.spamassassin = {
+      type = "unix";
+      command = "pipe";
+      privileged = true;
+      args = [
+        "flags=DROhu"
+        "user=vmail"
+        "argv=${pkgs.spamassassin}/bin/spamc"
+        "-f"
+        "-e"
+        "/run/wrappers/bin/sendmail"
+        "-oi"
+        "-f"
+        "\${sender}"
+        "\${recipient}"
+      ];
+    };
 
     # Submission options
     submissionOptions = {
@@ -133,11 +151,14 @@ in
     enableLmtp = false; # Disable LMTP if not needed
     enablePAM = true; # Enable PAM for authentication
 
+    # Enable Sieve for server-side mail filtering
+    modules = [ pkgs.dovecot_pigeonhole ];
+
     # Mail location and storage settings
     mailLocation = "maildir:/var/spool/mail/%u";
     mailUser = "vmail"; # User for virtual mail storage
     mailGroup = "vmail"; # Group for virtual mail storage
-    
+
     # SSL/TLS settings
     sslServerCert = "/var/lib/acme/mail.${domain}/cert.pem";
     sslServerKey = "/var/lib/acme/mail.${domain}/key.pem";
@@ -158,25 +179,41 @@ in
           user = postfix
         }
       }
+
+      protocol lda {
+        mail_plugins = $mail_plugins sieve
+      }
+
+      plugin {
+        sieve_before = /etc/dovecot/sieve/spam-to-junk.sieve
+      }
     '';
   };
 
-  # SpamAssassin - Anti-spam (disabled for now - needs proper integration)
-  # services.spamassassin = {
-  #   enable = true; # Enable SpamAssassin daemon
+  # Global Sieve script to file spam into Junk
+  environment.etc."dovecot/sieve/spam-to-junk.sieve".text = ''
+    require ["fileinto", "mailbox"];
 
-  #   # Configuration for SpamAssassin
-  #   config = ''
-  #     rewrite_header Subject [***** SPAM _SCORE_ *****]
-  #     required_score          5.0
-  #     use_bayes               1
-  #     bayes_auto_learn        1
-  #     add_header all Status _YESNO_, score=_SCORE_ required=_REQD_ tests=_TESTS_ autolearn=_AUTOLEARN_ version=_VERSION_
-  #   '';
+    if header :is "X-Spam-Flag" "YES" {
+      fileinto :create "Junk";
+      stop;
+    }
+  '';
 
-  #   # Optional: Enable debug mode if needed
-  #   debug = false;
-  # };
+  # SpamAssassin - Anti-spam
+  services.spamassassin = {
+    enable = true;
+
+    config = ''
+      rewrite_header Subject [***** SPAM _SCORE_ *****]
+      required_score          5.0
+      use_bayes               1
+      bayes_auto_learn        1
+      add_header all Status _YESNO_, score=_SCORE_ required=_REQD_ tests=_TESTS_ autolearn=_AUTOLEARN_ version=_VERSION_
+    '';
+
+    debug = false;
+  };
 
   # OpenDKIM - Email authentication
   services.opendkim = {
