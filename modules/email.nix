@@ -151,9 +151,6 @@ in
     enableLmtp = false; # Disable LMTP if not needed
     enablePAM = true; # Enable PAM for authentication
 
-    # Enable Sieve for server-side mail filtering
-    modules = [ pkgs.dovecot_pigeonhole ];
-
     # Mail location and storage settings
     mailLocation = "maildir:/var/spool/mail/%u";
     mailUser = "vmail"; # User for virtual mail storage
@@ -189,6 +186,9 @@ in
       }
     '';
   };
+
+  # Dovecot Sieve plugin (pigeonhole) for server-side filtering
+  environment.systemPackages = [ pkgs.dovecot_pigeonhole ];
 
   # Global Sieve script to file spam into Junk
   environment.etc."dovecot/sieve/spam-to-junk.sieve".text = ''
