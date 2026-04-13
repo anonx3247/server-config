@@ -111,8 +111,8 @@ in
 
       content_filter = "spamassassin:dummy";
 
-      # Use Dovecot LMTP for local delivery so Sieve filtering runs
-      mailbox_transport = "lmtp:unix:private/dovecot-lmtp";
+      # Bypass local transport entirely — deliver via Dovecot LMTP for Sieve support
+      local_transport = "lmtp:unix:private/dovecot-lmtp";
     };
 
     # SSL/TLS configuration
