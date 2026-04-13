@@ -184,6 +184,7 @@ in
       first_valid_uid = 1000
       first_valid_gid = 100
       auth_mechanisms = plain login
+      auth_username_format = %Ln
 
       service auth {
         unix_listener /var/lib/postfix/queue/private/auth {
