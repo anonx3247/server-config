@@ -111,8 +111,8 @@ in
 
       content_filter = "spamassassin:dummy";
 
-      # Use Dovecot LDA for local delivery so Sieve filtering runs
-      mailbox_command = "${pkgs.dovecot}/libexec/dovecot/deliver";
+      # Use Dovecot LMTP for local delivery so Sieve filtering runs
+      mailbox_transport = "lmtp:unix:private/dovecot-lmtp";
     };
 
     # SSL/TLS configuration
@@ -166,7 +166,7 @@ in
     enable = true;
     enableImap = true; # Enable IMAP protocol
     enablePop3 = false; # Disable POP3 if not needed
-    enableLmtp = false; # Disable LMTP if not needed
+    enableLmtp = true; # Enable LMTP for Postfix local delivery with Sieve
     enablePAM = true; # Enable PAM for authentication
 
     # Mail location and storage settings
@@ -181,8 +181,6 @@ in
     # Additional configuration
     extraConfig = ''
       mail_debug = yes
-      mail_uid = %u
-      mail_gid = %u
       first_valid_uid = 1000
       first_valid_gid = 100
       auth_mechanisms = plain login
@@ -193,6 +191,18 @@ in
           mode = 0660
           user = postfix
         }
+      }
+
+      service lmtp {
+        unix_listener /var/lib/postfix/queue/private/dovecot-lmtp {
+          group = postfix
+          mode = 0600
+          user = postfix
+        }
+      }
+
+      protocol lmtp {
+        mail_plugins = $mail_plugins sieve
       }
 
       protocol lda {
