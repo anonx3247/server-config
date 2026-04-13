@@ -227,8 +227,10 @@ in
         imapsieve_mailbox2_causes = COPY
         imapsieve_mailbox2_before = file:/etc/dovecot/sieve/learn-ham.sieve
 
-        sieve_pipe_bin_dir = /etc/dovecot/sieve-pipe
+        sieve_plugins = sieve_extprograms
+        sieve_extensions = +fileinto +reject +envelope +encoded-character +vacation +subaddress +comparator-i;ascii-numeric +relational +regex +imap4flags +copy +include +variables +body +enotify +environment +mailbox +date +ihave +vnd.dovecot.duplicate
         sieve_global_extensions = +vnd.dovecot.pipe
+        sieve_pipe_bin_dir = /etc/dovecot/sieve-pipe
       }
     '';
   };
