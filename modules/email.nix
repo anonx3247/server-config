@@ -30,6 +30,13 @@ let
 
   # Extract hostname from domain (first part before dot)
   hostname = builtins.head (lib.strings.splitString "." domain);
+
+  # Wrapper script: pipe through spamc, reinject to port 10025 to avoid content_filter loop
+  spamassassinPipe = pkgs.writeShellScript "spamassassin-pipe" ''
+    SENDER="$1"
+    shift
+    ${pkgs.spamassassin}/bin/spamc -f | ${pkgs.msmtp}/bin/msmtp --host=127.0.0.1 --port=10025 --from="$SENDER" -- "$@"
+  '';
 in
 
 {
@@ -112,7 +119,7 @@ in
     sslCert = "/var/lib/acme/mail.${domain}/cert.pem";
     sslKey = "/var/lib/acme/mail.${domain}/key.pem";
 
-    # SpamAssassin content filter transport
+    # SpamAssassin content filter: pipe through spamc, reinject on port 10025
     masterConfig.spamassassin = {
       type = "unix";
       command = "pipe";
@@ -120,14 +127,25 @@ in
       args = [
         "flags=DROhu"
         "user=vmail"
-        "argv=${pkgs.spamassassin}/bin/spamc"
-        "-f"
-        "-e"
-        "/run/wrappers/bin/sendmail"
-        "-oi"
-        "-f"
+        "argv=${spamassassinPipe}"
         "\${sender}"
         "\${recipient}"
+      ];
+    };
+
+    # Re-injection listener: accepts scanned mail without looping back through content_filter
+    masterConfig."127.0.0.1:10025" = {
+      type = "inet";
+      private = false;
+      command = "smtpd";
+      args = [
+        "-o" "content_filter="
+        "-o" "smtpd_delay_reject=no"
+        "-o" "smtpd_client_restrictions=permit_mynetworks,reject"
+        "-o" "smtpd_recipient_restrictions=permit_mynetworks,reject"
+        "-o" "mynetworks=127.0.0.0/8"
+        "-o" "smtpd_milters="
+        "-o" "receive_override_options=no_unknown_recipient_checks"
       ];
     };
 
