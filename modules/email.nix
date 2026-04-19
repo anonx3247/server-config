@@ -111,6 +111,9 @@ in
 
       content_filter = "spamassassin:dummy";
 
+      # Required by the 'D' pipe flag: process one recipient per spamc invocation
+      spamassassin_destination_recipient_limit = "1";
+
       # Bypass local transport entirely — deliver via Dovecot LMTP for Sieve support
       local_transport = "lmtp:unix:private/dovecot-lmtp";
     };
