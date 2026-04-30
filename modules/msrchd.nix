@@ -295,180 +295,311 @@ NGINX_HTTP_ONLY2
   <title>msrchd - Experiments</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
   <style>
+    :root {
+      --bg: #0a0a0c;
+      --bg-elev: rgba(255, 255, 255, 0.03);
+      --bg-elev-hover: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.07);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --text: #ededee;
+      --text-mute: #b0b0b3;
+      --text-faint: #777a80;
+      --accent: #c9a76a;
+      --accent-soft: rgba(201, 167, 106, 0.12);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: "Crimson Text", serif;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 40px 60px;
+      padding: 40px 60px 80px;
       text-align: center;
-      background-color: #0f0f0f;
-      color: #e8e8e8;
-      line-height: 1.6;
+      background:
+        radial-gradient(1100px 600px at 50% -100px, rgba(201, 167, 106, 0.06), transparent 60%),
+        radial-gradient(800px 500px at 90% 20%, rgba(120, 140, 200, 0.04), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
     }
-    a { color: #b8b8b8; text-decoration: none; transition: color 0.2s ease; }
+    a { color: var(--text-mute); text-decoration: none; transition: color 0.2s ease; }
     a:hover { color: #fff; }
     h1 {
-      font-size: 2.2em;
-      font-weight: 400;
-      letter-spacing: 0.05em;
-      margin: 20px 0 10px;
+      font-family: Georgia, serif;
+      font-size: 2.4em;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      margin: 24px 0 8px;
       color: #fff;
+      background: linear-gradient(180deg, #ffffff 0%, #d4d4d6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     h2 {
-      font-size: 1.4em;
+      font-family: Georgia, serif;
+      font-size: 1.7em;
       font-weight: 400;
-      letter-spacing: 0.05em;
-      margin: 30px 0 20px;
-      color: #c0c0c0;
+      letter-spacing: 0.06em;
+      margin: 50px 0 28px;
+      color: #fff;
+    }
+    .tagline {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 0.95em;
+      color: var(--text-faint);
+      letter-spacing: 0.04em;
+      margin: 0 auto 8px;
     }
     .nav {
+      padding: 18px 0;
       margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 4px;
     }
     .nav a {
-      color: #888;
-      margin: 0 20px;
-      font-size: 1em;
+      color: var(--text-faint);
+      padding: 8px 16px;
+      font-size: 0.95em;
       font-family: 'Inter', -apple-system, sans-serif;
+      letter-spacing: 0.02em;
+      border-radius: 6px;
+      transition: color 0.2s ease, background-color 0.2s ease;
     }
-    .nav a:hover { color: #fff; }
-    .nav a.active { color: #fff; }
+    .nav a:hover { color: #fff; background: var(--bg-elev); }
+    .nav a.active { color: #fff; background: var(--bg-elev); }
+    .nav a i { margin-right: 8px; font-size: 0.9em; }
 
     /* Tab content */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Projects list */
-    .projects {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      max-width: 800px;
+    /* Experiment (single, full-page) */
+    .experiment {
+      max-width: 820px;
       margin: 0 auto;
       text-align: left;
     }
-    .project {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      overflow: hidden;
-      transition: border-color 0.2s ease;
-    }
-    .project:hover { border-color: rgba(255, 255, 255, 0.2); }
-    .project-header {
-      padding: 20px 25px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .project-title {
-      font-family: 'Inter', -apple-system, sans-serif;
-      font-size: 1.1em;
-      font-weight: 500;
+    .experiment-title {
+      font-family: Georgia, serif;
+      font-size: 2em;
+      font-weight: 400;
+      letter-spacing: 0.03em;
       color: #fff;
+      margin: 10px 0 6px;
     }
-    .project-title .icon { margin-right: 12px; color: #888; }
-    .project-toggle {
-      color: #666;
-      transition: transform 0.2s ease, color 0.2s ease;
+    .experiment-eyebrow {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 0.72em;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      margin-bottom: 4px;
+      display: block;
     }
-    .project.expanded .project-toggle { transform: rotate(180deg); color: #888; }
-    .project-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-      background: rgba(0, 0, 0, 0.2);
+    .experiment-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 26px 0 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
     }
-    .project.expanded .project-body { max-height: 2000px; }
-    .project-description {
-      padding: 20px 25px;
-      color: #aaa;
-      font-size: 0.95em;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .project-description h3 { color: #fff; font-size: 1.1em; margin: 1.2em 0 0.5em; font-weight: 600; }
-    .project-description h4 { color: #ddd; font-size: 1em; margin: 1em 0 0.4em; font-weight: 600; }
-    .project-description p { margin: 0.8em 0; line-height: 1.7; }
-    .project-description ul { padding-left: 1.5em; margin: 0.5em 0; }
-    .project-description li { margin: 0.4em 0; }
-    .project-description strong { color: #fff; }
-    .project-description a { color: #7eb8da; }
-    .project-description a:hover { color: #a8d4f0; }
-    .project-description code {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.9em;
-    }
-    .project-link {
+    .experiment-link {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 15px;
-      padding: 10px 18px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
-      color: #fff;
+      gap: 10px;
+      padding: 12px 22px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(201, 167, 106, 0.35);
+      border-radius: 8px;
+      color: var(--accent);
       font-family: 'Inter', -apple-system, sans-serif;
-      font-size: 0.9em;
-      transition: background 0.2s ease;
+      font-size: 0.92em;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
     }
-    .project-link:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
-    .no-ssl { color: #cc6600; font-size: 0.8em; margin-left: 10px; }
-    .empty { color: #666; font-style: italic; }
+    .experiment-link:hover {
+      background: rgba(201, 167, 106, 0.22);
+      color: #fff;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .experiment-link.secondary {
+      background: var(--bg-elev);
+      border-color: var(--border);
+      color: var(--text-mute);
+    }
+    .experiment-link.secondary:hover {
+      background: var(--bg-elev-hover);
+      color: #fff;
+      border-color: var(--border-strong);
+    }
+    .experiment-content {
+      color: var(--text-mute);
+      font-family: "Crimson Text", serif;
+      font-size: 1.08em;
+      line-height: 1.8;
+    }
+    .experiment-content h3 {
+      font-family: Georgia, serif;
+      color: #fff;
+      font-size: 1.4em;
+      margin: 1.6em 0 0.6em;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding-top: 0.3em;
+      border-top: 1px solid var(--border);
+      padding-top: 1.6em;
+    }
+    .experiment-content h3:first-child {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
+    }
+    .experiment-content h4 {
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: var(--accent);
+      font-size: 0.78em;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin: 1.4em 0 0.6em;
+      font-weight: 600;
+    }
+    .experiment-content p { margin: 0.9em 0; }
+    .experiment-content ul {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 0.95em;
+      padding-left: 1.5em;
+      margin: 0.6em 0;
+      color: var(--text-mute);
+      line-height: 1.7;
+    }
+    .experiment-content li { margin: 0.45em 0; }
+    .experiment-content strong { color: #fff; font-weight: 600; }
+    .experiment-content a { color: var(--accent); }
+    .experiment-content a:hover { color: #fff; }
+    .experiment-content code {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.88em;
+      font-family: 'SF Mono', Menlo, monospace;
+    }
+    .empty {
+      color: var(--text-faint);
+      font-style: italic;
+      max-width: 820px;
+      margin: 60px auto;
+      text-align: center;
+    }
 
     /* About section */
     .about {
-      max-width: 800px;
+      max-width: 720px;
       margin: 0 auto;
       text-align: left;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 32px 38px;
     }
-    .about p { margin: 1em 0; color: #bbb; }
-    .about h3 { color: #fff; margin: 1.5em 0 0.5em; font-weight: 500; }
-    .about ul { color: #bbb; padding-left: 1.5em; }
-    .about li { margin: 0.5em 0; }
+    .about p {
+      margin: 1em 0;
+      color: var(--text-mute);
+      font-size: 1.05em;
+    }
+    .about h3 {
+      font-family: Georgia, serif;
+      color: #fff;
+      margin: 1.6em 0 0.6em;
+      font-weight: 500;
+      font-size: 1.2em;
+      letter-spacing: 0.02em;
+    }
+    .about h3:first-of-type { margin-top: 0.5em; }
+    .about ul {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 0.95em;
+      color: var(--text-mute);
+      padding-left: 1.4em;
+    }
+    .about li { margin: 0.55em 0; }
+    .about strong { color: #fff; font-weight: 600; }
+    .about a { color: var(--accent); }
+    .about a:hover { color: #fff; }
     .about code {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
       border-radius: 4px;
-      font-size: 0.9em;
+      font-size: 0.88em;
+      font-family: 'SF Mono', Menlo, monospace;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 20px 18px 50px; }
+      h1 { font-size: 1.9em; letter-spacing: 0.12em; }
+      .nav { gap: 0; }
+      .nav a { padding: 6px 10px; font-size: 0.85em; }
+      .nav a i { margin-right: 5px; }
+      .project-header { padding: 18px 20px; }
+      .project-description { padding: 20px 22px; }
+      .about { padding: 24px 22px; }
     }
   </style>
 </head>
 <body>
-  <h1>msrchd</h1>
+  <h1>MSRCHD</h1>
+  <p class="tagline">Multi-Agent Reasoning Experiments</p>
   <nav class="nav">
-    <a href="https://anas.lecaillon.com"><i class="fas fa-home"></i> Home</a>
-    <a href="#experiments" class="tab-link active" data-tab="experiments"><i class="fas fa-flask"></i> Experiments</a>
-    <a href="#about" class="tab-link" data-tab="about"><i class="fas fa-info-circle"></i> About</a>
-    <a href="https://github.com/anonx3247/msrchd"><i class="fab fa-github"></i> GitHub</a>
+    <a href="https://anas.lecaillon.com"><i class="fas fa-home"></i>Home</a>
+    <a href="#experiment" class="tab-link active" data-tab="experiment"><i class="fas fa-flask"></i>Experiment</a>
+    <a href="#about" class="tab-link" data-tab="about"><i class="fas fa-info-circle"></i>About</a>
+    <a href="https://github.com/anonx3247/msrchd"><i class="fab fa-github"></i>GitHub</a>
   </nav>
 
-  <div id="experiments" class="tab-content active">
-    <h2>Experiments</h2>
-    <div class="projects">
+  <div id="experiment" class="tab-content active">
 INDEX_HEADER
 
-    for project in $PROJECTS; do
+    # Pick the single experiment to feature (first project found, prefer 'imo')
+    feature_project=""
+    for p in $PROJECTS; do
+      if [ "$p" = "imo" ]; then
+        feature_project="$p"
+        break
+      fi
+    done
+    if [ -z "$feature_project" ]; then
+      for p in $PROJECTS; do
+        feature_project="$p"
+        break
+      done
+    fi
+
+    if [ -n "$feature_project" ]; then
+      project="$feature_project"
       subdomain="$project.msrchd.${domain}"
       cert_dir="/var/lib/acme/$subdomain"
 
-      # Get display title from .title file, or use project name
       if [ -f "$PROJECTS_DIR/$project/.title" ]; then
         title=$(cat "$PROJECTS_DIR/$project/.title")
       else
         title="$project"
       fi
 
-      # Get description from .description.html (HTML) or .description (plain text)
       if [ -f "$PROJECTS_DIR/$project/.description.html" ]; then
         description=$(cat "$PROJECTS_DIR/$project/.description.html")
         description_is_html="true"
@@ -487,50 +618,53 @@ INDEX_HEADER
       fi
 
       if [ "$description_is_html" = "true" ]; then
-        cat >> "$INDEX_FILE" << INDEX_PROJECT_HTML
-    <div class="project" onclick="this.classList.toggle('expanded')">
-      <div class="project-header">
-        <span class="project-title"><i class="fas fa-flask icon"></i>$title</span>
-        <i class="fas fa-chevron-down project-toggle"></i>
+        cat >> "$INDEX_FILE" << INDEX_EXPERIMENT_HTML
+    <article class="experiment">
+      <span class="experiment-eyebrow">Featured experiment</span>
+      <h2 class="experiment-title">$title</h2>
+      <div class="experiment-cta">
+        <a href="$url" class="experiment-link">
+          <i class="fas fa-flask"></i>
+          <span>See experiment results</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="https://github.com/anonx3247/msrchd" class="experiment-link secondary">
+          <i class="fab fa-github"></i>
+          <span>Source</span>
+        </a>
       </div>
-      <div class="project-body">
-        <div class="project-description">
-          $description
-          <a href="$url" class="project-link" onclick="event.stopPropagation()">
-            <span>See experiment results</span>
-            <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
+      <div class="experiment-content">
+        $description
       </div>
-    </div>
-INDEX_PROJECT_HTML
+    </article>
+INDEX_EXPERIMENT_HTML
       else
-        cat >> "$INDEX_FILE" << INDEX_PROJECT_TEXT
-    <div class="project" onclick="this.classList.toggle('expanded')">
-      <div class="project-header">
-        <span class="project-title"><i class="fas fa-flask icon"></i>$title</span>
-        <i class="fas fa-chevron-down project-toggle"></i>
+        cat >> "$INDEX_FILE" << INDEX_EXPERIMENT_TEXT
+    <article class="experiment">
+      <span class="experiment-eyebrow">Featured experiment</span>
+      <h2 class="experiment-title">$title</h2>
+      <div class="experiment-cta">
+        <a href="$url" class="experiment-link">
+          <i class="fas fa-flask"></i>
+          <span>See experiment results</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="https://github.com/anonx3247/msrchd" class="experiment-link secondary">
+          <i class="fab fa-github"></i>
+          <span>Source</span>
+        </a>
       </div>
-      <div class="project-body">
-        <div class="project-description">
-          <p>$description</p>
-          <a href="$url" class="project-link" onclick="event.stopPropagation()">
-            <span>See experiment results</span>
-            <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
+      <div class="experiment-content">
+        <p>$description</p>
       </div>
-    </div>
-INDEX_PROJECT_TEXT
+    </article>
+INDEX_EXPERIMENT_TEXT
       fi
-    done
-
-    if [ -z "$PROJECTS" ]; then
+    else
       echo "    <p class=\"empty\">No experiments yet.</p>" >> "$INDEX_FILE"
     fi
 
     cat >> "$INDEX_FILE" << 'INDEX_FOOTER'
-    </div>
   </div>
 
   <div id="about" class="tab-content">
