@@ -26,6 +26,7 @@ in
       search = {
         safe_search = 2;
         autocomplete = "duckduckgo";
+        formats = [ "html" "json" "rss" ];
       };
     };
   };
