@@ -24,6 +24,10 @@ let
     (import ./modules/srchd.nix { inherit config lib pkgs domain srchdAuth; })
   ] ++ lib.optionals services.msrchd [
     (import ./modules/msrchd.nix { inherit config lib pkgs domain srchdAuth; })
+  ] ++ lib.optionals (services.ibnmalik or false) [
+    (import ./modules/ibnmalik.nix { inherit config lib pkgs; })
+  ] ++ lib.optionals (services.tailscale or false) [
+    (import ./modules/tailscale.nix { inherit config lib pkgs; })
   ];
 
 in
@@ -63,7 +67,7 @@ in
   };
 
   # Nginx base configuration (only if any web-facing service is enabled)
-  services.nginx = lib.mkIf (services.web || services.mail || services.git || services.srchd || services.msrchd) {
+  services.nginx = lib.mkIf (services.web || services.mail || services.git || services.srchd || services.msrchd || (services.ibnmalik or false)) {
     enable = true;
     recommendedGzipSettings = true;
     recommendedOptimisation = true;
@@ -90,7 +94,7 @@ in
 
 
   # ACME configuration for Let's Encrypt certificates (only if any web-facing service is enabled)
-  security.acme = lib.mkIf (services.web || services.mail || services.git || services.srchd || services.msrchd) {
+  security.acme = lib.mkIf (services.web || services.mail || services.git || services.srchd || services.msrchd || (services.ibnmalik or false)) {
     acceptTerms = true;
     defaults.email = "security@${domain}";
   };

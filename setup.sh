@@ -29,10 +29,13 @@ read_config() {
     if [ -f "$CONFIG_FILE" ]; then
         echo "Found existing configuration file: $CONFIG_FILE"
         source "$CONFIG_FILE"
+        # Backward compat: default new toggles to false if absent in old config
+        enable_ibnmalik="${enable_ibnmalik:-false}"
+        enable_tailscale="${enable_tailscale:-false}"
         echo "Previous configuration:"
         echo "  Domain: $domain"
         echo "  Web prefix: $web_domain_prefix"
-        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd, msrchd=$enable_msrchd"
+        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd, msrchd=$enable_msrchd, ibnmalik=$enable_ibnmalik, tailscale=$enable_tailscale"
         echo
         if [ "$ASSUME_YES" = true ]; then
             echo "Using -y flag: using existing configuration"
@@ -61,6 +64,8 @@ enable_web="$enable_web"
 enable_srchd="$enable_srchd"
 srchd_auth="$srchd_auth"
 enable_msrchd="$enable_msrchd"
+enable_ibnmalik="$enable_ibnmalik"
+enable_tailscale="$enable_tailscale"
 EOF
     echo "Configuration saved to $CONFIG_FILE"
 }
@@ -81,6 +86,8 @@ if ! read_config; then
         enable_srchd="true"
         srchd_auth=""
         enable_msrchd="true"
+        enable_ibnmalik="true"
+        enable_tailscale="true"
     else
         read -p "Enable mail server? (Y/n): " -n 1 -r
         echo
@@ -123,6 +130,22 @@ if ! read_config; then
             enable_msrchd="false"
         else
             enable_msrchd="true"
+        fi
+
+        read -p "Enable ibnmalik.org static site? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_ibnmalik="false"
+        else
+            enable_ibnmalik="true"
+        fi
+
+        read -p "Enable tailscale VPN? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_tailscale="false"
+        else
+            enable_tailscale="true"
         fi
     fi
     
@@ -183,6 +206,12 @@ fi
 if [ "$enable_msrchd" = "true" ]; then
     echo "    msrchd viewer: msrchd.$domain"
 fi
+if [ "$enable_ibnmalik" = "true" ]; then
+    echo "    ibnmalik static site: ibnmalik.org (+ www redirect)"
+fi
+if [ "$enable_tailscale" = "true" ]; then
+    echo "    Tailscale VPN: enabled"
+fi
 echo
 
 # Function to generate configuration.nix
@@ -218,6 +247,8 @@ $users_list
   enableWeb = $enable_web;
   enableSrchd = $enable_srchd;
   enableMsrchd = $enable_msrchd;
+  enableIbnmalik = $enable_ibnmalik;
+  enableTailscale = $enable_tailscale;
   srchdAuthCredentials = "$srchd_auth";
 in
 
@@ -233,6 +264,8 @@ import ./$BASE_CONFIG {
     web = enableWeb;
     srchd = enableSrchd;
     msrchd = enableMsrchd;
+    ibnmalik = enableIbnmalik;
+    tailscale = enableTailscale;
   };
 }
 EOF
@@ -337,6 +370,12 @@ fi
 if [ "$enable_msrchd" = "true" ]; then
     echo "msrchd: https://msrchd.$domain"
 fi
+if [ "$enable_ibnmalik" = "true" ]; then
+    echo "ibnmalik: https://ibnmalik.org (deploy site to /var/www/ibnmalik/)"
+fi
+if [ "$enable_tailscale" = "true" ]; then
+    echo "Tailscale: enabled"
+fi
 echo
 
 if [ "$enable_mail" = "true" ]; then
@@ -378,6 +417,10 @@ fi
 if [ "$enable_msrchd" = "true" ]; then
     echo "  msrchd.$domain -> [your server IP]"
     echo "  *.msrchd.$domain -> [your server IP]"
+fi
+if [ "$enable_ibnmalik" = "true" ]; then
+    echo "  ibnmalik.org -> [your server IP]   (set on the ibnmalik.org zone, not $domain)"
+    echo "  www.ibnmalik.org -> [your server IP]"
 fi
 if [ "$enable_mail" = "true" ]; then
     echo "MX Record:"
