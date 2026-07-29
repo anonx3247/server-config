@@ -32,10 +32,11 @@ read_config() {
         # Backward compat: default new toggles to false if absent in old config
         enable_ibnmalik="${enable_ibnmalik:-false}"
         enable_tailscale="${enable_tailscale:-false}"
+        enable_searx="${enable_searx:-false}"
         echo "Previous configuration:"
         echo "  Domain: $domain"
         echo "  Web prefix: $web_domain_prefix"
-        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd, msrchd=$enable_msrchd, ibnmalik=$enable_ibnmalik, tailscale=$enable_tailscale"
+        echo "  Services enabled: mail=$enable_mail, git=$enable_git, web=$enable_web, srchd=$enable_srchd, msrchd=$enable_msrchd, ibnmalik=$enable_ibnmalik, tailscale=$enable_tailscale, searx=$enable_searx"
         echo
         if [ "$ASSUME_YES" = true ]; then
             echo "Using -y flag: using existing configuration"
@@ -66,6 +67,7 @@ srchd_auth="$srchd_auth"
 enable_msrchd="$enable_msrchd"
 enable_ibnmalik="$enable_ibnmalik"
 enable_tailscale="$enable_tailscale"
+enable_searx="$enable_searx"
 EOF
     echo "Configuration saved to $CONFIG_FILE"
 }
@@ -88,6 +90,7 @@ if ! read_config; then
         enable_msrchd="true"
         enable_ibnmalik="true"
         enable_tailscale="true"
+        enable_searx="true"
     else
         read -p "Enable mail server? (Y/n): " -n 1 -r
         echo
@@ -146,6 +149,14 @@ if ! read_config; then
             enable_tailscale="false"
         else
             enable_tailscale="true"
+        fi
+
+        read -p "Enable SearXNG (tailnet-only search)? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            enable_searx="false"
+        else
+            enable_searx="true"
         fi
     fi
     
@@ -249,6 +260,7 @@ $users_list
   enableMsrchd = $enable_msrchd;
   enableIbnmalik = $enable_ibnmalik;
   enableTailscale = $enable_tailscale;
+  enableSearx = $enable_searx;
   srchdAuthCredentials = "$srchd_auth";
 in
 
@@ -266,6 +278,7 @@ import ./$BASE_CONFIG {
     msrchd = enableMsrchd;
     ibnmalik = enableIbnmalik;
     tailscale = enableTailscale;
+    searx = enableSearx;
   };
 }
 EOF

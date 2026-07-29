@@ -28,6 +28,8 @@ let
     (import ./modules/ibnmalik.nix { inherit config lib pkgs; })
   ] ++ lib.optionals (services.tailscale or false) [
     (import ./modules/tailscale.nix { inherit config lib pkgs; })
+  ] ++ lib.optionals (services.searx or false) [
+    (import ./modules/searx.nix { inherit config lib pkgs; })
   ];
 
 in
