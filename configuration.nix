@@ -22,7 +22,7 @@ let
   enableMsrchd = true;
   enableIbnmalik = true;
   enableTailscale = true;
-  enableSearx = true;
+  enableSearx = false;
   srchdAuthCredentials = "";
 in
 
